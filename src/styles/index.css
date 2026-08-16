@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ovia-primary: #a64f8c;
+  --color-ovia-logo: #b878ac;
+  --color-ovia-plum: #673453;
+  --color-ovia-blush: #efdaec;
+  --color-ovia-ivory: #fff9f5;
+  --color-ovia-ink: #292327;
+  --color-ovia-muted: #756b70;
+  --color-ovia-line: #e9dfe4;
+  --color-ovia-success: #2f7152;
+  --color-ovia-warning: #9a5b16;
+  --color-ovia-danger: #a33f4b;
+
+  --font-display: "Cormorant Garamond", "Iowan Old Style", "Baskerville", "Palatino Linotype", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", "Avenir Next", "Segoe UI", sans-serif;
+
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-sheet: 1.75rem;
+
+  --shadow-card: 0 14px 40px rgb(103 52 83 / 0.08);
+  --shadow-floating: 0 24px 60px rgb(41 35 39 / 0.14);
+
+  --breakpoint-xs: 24.375rem;
+}
+
+:root {
+  color: var(--color-ovia-ink);
+  background: var(--color-ovia-ivory);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  min-height: 100%;
+  background: var(--color-ovia-ivory);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 20rem;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top right, rgb(239 218 236 / 0.34), transparent 28rem),
+    var(--color-ovia-ivory);
+}
+
+@layer components {
+  .type-display {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 8vw, 7rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .type-section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.125rem, 5vw, 4.75rem);
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.035em;
+    color: var(--color-ovia-ink);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .type-eyebrow {
+    font-size: 0.67rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+    color: var(--color-ovia-primary);
+  }
+
+  .type-supporting {
+    font-size: clamp(0.875rem, 1.4vw, 1rem);
+    line-height: 1.75;
+    color: var(--color-ovia-muted);
+  }
+
+  .customer-primary-action {
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 140ms ease;
+  }
+
+  .customer-primary-action:active {
+    transform: translateY(1px);
+  }
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(166 79 140 / 0.38);
+  outline-offset: 3px;
+}
+
+.customer-search-input:focus-visible {
+  outline: none;
+}
+
+::selection {
+  color: var(--color-ovia-ivory);
+  background: var(--color-ovia-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
