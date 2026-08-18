@@ -1,52 +1,69 @@
-import { ArrowRight, Boxes, IndianRupee, PackageCheck, ShoppingBag } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  Boxes,
+  ClipboardList,
+  LayoutDashboard,
+  PackageOpen,
+  ShoppingBag,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { sellableProducts } from '../../data/products'
-import { formatInr } from '../../lib/currency'
 import { getBusinessMetrics } from '../../lib/business'
 import { useDemoStore } from '../../store/demoStore'
+import { OrderStatusBadge } from '../business/OrderStatusBadge'
 import { Container } from '../layout/LayoutPrimitives'
 
-function formatOrderDate(value: string) {
-  return new Intl.DateTimeFormat('en-IN', {
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date(value))
-}
+const capabilities = [
+  { label: 'Products', icon: PackageOpen },
+  { label: 'Inventory', icon: Boxes },
+  { label: 'Orders', icon: ClipboardList },
+  { label: 'Analytics', icon: BarChart3 },
+] as const
 
 export function BusinessRevealSection() {
   const inventory = useDemoStore((state) => state.inventoryByVariant)
   const orders = useDemoStore((state) => state.orders)
   const createdProducts = useDemoStore((state) => state.createdProducts)
-  const metrics = getBusinessMetrics(
-    [...sellableProducts, ...createdProducts],
-    orders,
-    inventory,
-  )
+  const businessProducts = [...sellableProducts, ...createdProducts]
+  const metrics = getBusinessMetrics(businessProducts, orders, inventory)
   const recentOrders = [...orders]
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
     .slice(0, 2)
+
   const previewMetrics = [
-    { label: 'Orders', value: metrics.orders.toString(), icon: ShoppingBag },
-    { label: 'Revenue', value: formatInr(metrics.revenue), icon: IndianRupee },
-    { label: 'Active products', value: metrics.activeProducts.toString(), icon: PackageCheck },
+    { label: 'Orders', value: metrics.orders, icon: ShoppingBag },
+    { label: 'Active products', value: metrics.activeProducts, icon: PackageOpen },
+    { label: 'Low stock', value: metrics.lowStockVariants.length, icon: AlertTriangle },
   ]
 
   return (
     <section className="overflow-hidden bg-ovia-plum text-white" data-testid="business-reveal-section">
-      <Container className="grid gap-8 py-12 sm:gap-12 sm:py-24 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-16 lg:py-28">
+      <Container className="grid gap-8 py-12 sm:gap-12 sm:py-22 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-16 lg:py-28">
         <div className="max-w-xl">
-          <p className="text-[0.67rem] font-bold tracking-[0.17em] text-ovia-blush uppercase">
-            Behind the edit
+          <p className="text-[0.65rem] font-bold tracking-[0.18em] text-ovia-logo uppercase">
+            Beyond the storefront
           </p>
-          <h2 className="mt-3 max-w-lg font-display text-[2.25rem] leading-[0.94] font-medium tracking-[-0.035em] sm:mt-4 sm:text-[clamp(2.7rem,5.6vw,5.4rem)] sm:leading-[0.9] sm:tracking-[-0.04em]">
+          <h2 className="mt-3.5 max-w-lg font-display text-[2.45rem] leading-[0.9] font-medium tracking-[-0.04em] sm:mt-4 sm:text-5xl lg:text-[4.4rem]">
             The storefront is only half the story.
           </h2>
-          <p className="mt-4 max-w-lg text-sm leading-6 text-white/72 sm:mt-6 sm:text-base sm:leading-8">
-            See how Ovia could manage products, sizes, inventory, orders and customer insights behind the scenes.
+          <p className="mt-4 max-w-lg text-sm leading-6 text-white/72 sm:mt-5 sm:text-base sm:leading-8">
+            Manage products, inventory, orders and analytics in the same private demo, connected to the storefront you just explored.
           </p>
+
+          <ul aria-label="Business Preview capabilities" className="mt-5 grid max-w-md grid-cols-2 gap-x-5 gap-y-2.5 sm:mt-6 sm:gap-y-3">
+            {capabilities.map(({ label, icon: Icon }) => (
+              <li className="flex items-center gap-2 text-xs font-semibold text-white/78 sm:text-sm" key={label}>
+                <Icon aria-hidden="true" className="text-ovia-logo" size={15} />
+                {label}
+              </li>
+            ))}
+          </ul>
+
           <Link
-            className="customer-primary-action mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-ovia-blush px-5 text-sm font-bold text-ovia-plum hover:bg-white sm:mt-8 sm:px-6"
+            className="customer-primary-action mt-7 inline-flex min-h-12 items-center gap-2 border-b border-ovia-logo text-sm font-bold text-white sm:mt-8"
             data-testid="business-reveal-cta"
             to="/business"
           >
@@ -55,75 +72,91 @@ export function BusinessRevealSection() {
           </Link>
         </div>
 
-        <div className="relative sm:pb-10 lg:pb-0 lg:pl-5">
-          <div aria-hidden="true" className="absolute -top-7 -right-8 size-40 rounded-full border border-ovia-blush/15" />
-          <div className="relative overflow-hidden rounded-[1.4rem] border border-white/14 bg-ovia-ivory text-ovia-ink shadow-[0_28px_70px_rgb(27_14_23/0.24)] sm:rounded-[1.75rem]">
-            <div className="flex items-center justify-between border-b border-ovia-line px-4 py-3.5 sm:px-6">
-              <div className="flex items-center gap-3">
-                <img alt="" className="size-8 object-cover sm:size-9" src="/brand/ovia-logo.jpg" />
-                <div>
-                  <p className="text-xs font-bold text-ovia-ink sm:text-sm">Ovia business overview</p>
-                  <p className="mt-0.5 text-[0.6rem] text-ovia-muted sm:text-[0.67rem]">Live demo interface preview</p>
+        <div className="relative" data-testid="business-reveal-preview">
+          <div aria-hidden="true" className="absolute -top-10 -right-10 size-44 rounded-full border border-ovia-logo/18" />
+          <div className="relative overflow-hidden rounded-[0.9rem] border border-white/12 bg-[#fbf7f0] text-ovia-ink shadow-[0_24px_58px_rgb(30_5_13/0.26)]">
+            <div className="flex items-center justify-between border-b border-ovia-line px-4 py-3.5 sm:px-5 sm:py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <img alt="" className="size-9 shrink-0 object-cover" src="/brand/jewellgalleria-logo.png" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-ovia-ink">Jewellgalleria Business</p>
+                  <p className="mt-0.5 text-[0.63rem] text-ovia-muted">Private operations preview</p>
                 </div>
               </div>
-              <span className="rounded-full bg-ovia-blush/65 px-2.5 py-1 text-[0.55rem] font-bold tracking-[0.1em] text-ovia-plum uppercase sm:text-[0.62rem]">
-                Demo mode
-              </span>
+              <span className="ml-3 shrink-0 rounded-full border border-ovia-primary/20 bg-ovia-blush/45 px-2.5 py-1 text-[0.55rem] font-bold tracking-[0.1em] text-ovia-primary uppercase">Demo mode</span>
             </div>
 
-            <div className="p-3.5 sm:p-6">
-              <p className="text-[0.61rem] font-bold tracking-[0.13em] text-ovia-primary uppercase">
-                Simulated business data
-              </p>
-              <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-3">
-                {previewMetrics.map(({ label, value, icon: Icon }, index) => (
-                  <div className="min-w-0 border border-ovia-line bg-white p-2.5 sm:p-4" key={label}>
-                    <Icon aria-hidden="true" className="text-ovia-primary" size={index === 2 ? 14 : 15} />
-                    <p className="mt-2 truncate text-sm font-semibold tracking-[-0.03em] text-ovia-ink sm:mt-3 sm:text-2xl">{value}</p>
-                    <p className="mt-1 truncate text-[0.58rem] text-ovia-muted sm:text-[0.68rem]">{label}</p>
-                  </div>
+            <div aria-label="Business Preview navigation" className="grid grid-cols-5 border-b border-ovia-line bg-white px-2 py-2 sm:px-4">
+              <span className="flex min-h-9 items-center justify-center gap-1 rounded-lg bg-ovia-blush/70 px-1 text-[0.56rem] font-bold text-ovia-plum sm:text-[0.65rem]">
+                <LayoutDashboard aria-hidden="true" className="hidden sm:block" size={12} /> Dashboard
+              </span>
+              {capabilities.map(({ label, icon: Icon }) => (
+                <span className="flex min-h-9 items-center justify-center gap-1 px-1 text-[0.56rem] font-semibold text-ovia-muted sm:text-[0.65rem]" key={label}>
+                  <Icon aria-hidden="true" className="hidden sm:block" size={12} /> {label}
+                </span>
+              ))}
+            </div>
+
+            <div className="p-3.5 sm:p-5">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {previewMetrics.map(({ label, value, icon: Icon }) => (
+                  <article className="min-w-0 rounded-xl border border-ovia-line bg-white p-3 sm:p-3.5" key={label}>
+                    <div className="flex items-center justify-between gap-1.5">
+                      <p className="text-[0.58rem] leading-3 font-semibold text-ovia-muted sm:text-[0.66rem]">{label}</p>
+                      <Icon aria-hidden="true" className="shrink-0 text-ovia-primary" size={13} />
+                    </div>
+                    <p className="mt-3 text-xl font-semibold tracking-[-0.03em] text-ovia-ink sm:text-2xl">{value}</p>
+                    <p className="mt-0.5 text-[0.53rem] text-ovia-muted sm:text-[0.6rem]">Simulated</p>
+                  </article>
                 ))}
               </div>
 
-              <div className="mt-2.5 flex items-center justify-between bg-ovia-blush/55 px-3 py-2.5 sm:hidden">
-                <div>
-                  <p className="text-[0.58rem] font-bold tracking-[0.1em] text-ovia-primary uppercase">Stock watch</p>
-                  <p className="mt-0.5 text-[0.66rem] text-ovia-muted">Low-stock variants ready for attention.</p>
-                </div>
-                <span className="flex size-9 items-center justify-center rounded-full bg-white text-sm font-bold text-ovia-plum">{metrics.lowStockVariants.length}</span>
-              </div>
-
-              <div className="mt-3 hidden gap-3 sm:grid sm:grid-cols-[1.28fr_0.72fr]">
-                <div className="border border-ovia-line bg-white">
-                  <div className="flex items-center justify-between border-b border-ovia-line px-3 py-2.5 sm:px-4">
-                    <p className="text-xs font-bold">Recent orders</p>
-                    <span className="text-[0.6rem] text-ovia-muted">Live demo state</span>
+              <div className="mt-3 grid grid-cols-[1.18fr_0.82fr] gap-2.5 sm:grid-cols-[1.2fr_0.8fr] sm:gap-3">
+                <article className="overflow-hidden rounded-xl border border-ovia-line bg-white" data-testid="reveal-preview-orders">
+                  <div className="flex items-center justify-between border-b border-ovia-line px-3.5 py-3">
+                    <div>
+                      <h3 className="font-display text-base text-ovia-ink">Recent orders</h3>
+                      <p className="text-[0.57rem] text-ovia-muted">Latest simulated activity</p>
+                    </div>
+                    <span className="text-[0.58rem] font-bold text-ovia-primary">View all</span>
                   </div>
                   <div className="divide-y divide-ovia-line">
-                    {recentOrders.map((order) => (
-                      <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-3 sm:px-4" key={order.id}>
-                        <div className="min-w-0">
-                          <p className="truncate text-[0.7rem] font-bold sm:text-xs">{order.customerName}</p>
-                          <p className="mt-0.5 text-[0.58rem] text-ovia-muted sm:text-[0.64rem]">{order.id} · {formatOrderDate(order.createdAt)}</p>
+                    {recentOrders.map((order, index) => {
+                      const product = businessProducts.find((candidate) => candidate.id === order.items[0]?.productId)
+                      return (
+                        <div className={index === 0 ? 'flex items-center gap-2.5 px-3 py-2.5 sm:px-3.5' : 'hidden items-center gap-2.5 px-3.5 py-2.5 sm:flex'} key={order.id}>
+                          {product && <img alt="" className="size-9 shrink-0 rounded-lg bg-ovia-ivory object-cover object-top" src={product.images[0]} />}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[0.65rem] font-bold text-ovia-ink">{product?.catalogueName ?? 'Jewellgalleria order'}</p>
+                            <p className="mt-0.5 truncate text-[0.56rem] text-ovia-muted">{order.customerName} · {order.id}</p>
+                          </div>
+                          <span className="hidden sm:block"><OrderStatusBadge status={order.status} /></span>
                         </div>
-                        <p className="text-[0.68rem] font-bold text-ovia-plum sm:text-xs">{formatInr(order.amountInPaise)}</p>
+                      )
+                    })}
+                  </div>
+                </article>
+
+                <article className="rounded-xl bg-ovia-plum p-3 text-white sm:p-4" data-testid="reveal-preview-stock">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[0.58rem] font-bold tracking-[0.11em] text-ovia-blush uppercase">Low stock alerts</p>
+                      <p className="mt-2 text-3xl font-semibold">{metrics.lowStockVariants.length}</p>
+                    </div>
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/12 text-ovia-blush">
+                      <AlertTriangle aria-hidden="true" size={15} />
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[0.56rem] leading-4 text-white/65 sm:hidden">simulated alerts</p>
+                  <div className="mt-3 hidden space-y-2 border-t border-white/12 pt-3 sm:block">
+                    {metrics.lowStockVariants.slice(0, 2).map(({ product, quantity, selection }) => (
+                      <div className="flex items-center justify-between gap-2 text-[0.61rem]" key={`${product.id}-${JSON.stringify(selection)}`}>
+                        <span className="truncate text-white/75">{product.catalogueName}</span>
+                        <span className="font-bold">{quantity}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="flex min-h-28 flex-col justify-between bg-ovia-blush/55 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[0.6rem] font-bold tracking-[0.1em] text-ovia-primary uppercase">Stock watch</p>
-                      <p className="mt-2 text-3xl font-semibold text-ovia-plum">{metrics.lowStockVariants.length}</p>
-                    </div>
-                    <span className="flex size-8 items-center justify-center rounded-full bg-white text-ovia-plum">
-                      <Boxes aria-hidden="true" size={15} />
-                    </span>
-                  </div>
-                  <p className="mt-4 text-[0.66rem] leading-5 text-ovia-muted">Low-stock variants ready for attention.</p>
-                </div>
+                </article>
               </div>
             </div>
           </div>

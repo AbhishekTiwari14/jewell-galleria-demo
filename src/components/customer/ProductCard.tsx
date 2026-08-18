@@ -2,7 +2,11 @@ import { Check, Heart, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import type { CommerceProduct } from '../../data/productTypes'
+import {
+  formatProductSelection,
+  getDefaultSelection,
+  type CommerceProduct,
+} from '../../data/productTypes'
 import { formatInr } from '../../lib/currency'
 import { classNames } from '../../lib/classNames'
 import { useDemoStore } from '../../store/demoStore'
@@ -36,27 +40,28 @@ export function ProductCard({
 
   const handleQuickAdd = () => {
     if (quickAddState !== 'idle') return
-    const size = product.sizes[0]
-    if (!size) return
-    const color = product.colors.find((item) => item.selectable)?.label
+    const selection = getDefaultSelection(product)
 
     setQuickAddState('adding')
     timers.current.push(window.setTimeout(() => {
-      addToCart({ productId: product.id, quantity: 1, size, ...(color ? { color } : {}) })
+      addToCart({ productId: product.id, quantity: 1, selection })
       setQuickAddState('added')
     }, 160))
     timers.current.push(window.setTimeout(() => onOpenCart?.(), 520))
     timers.current.push(window.setTimeout(() => setQuickAddState('idle'), 1_000))
   }
 
-  const quickAddVariant = [product.sizes[0], product.colors.find((item) => item.selectable)?.label]
-    .filter(Boolean)
-    .join(' / ')
+  const quickAddVariant = formatProductSelection(
+    product,
+    getDefaultSelection(product),
+  )
   const quickAddLabel = quickAddState === 'adding'
     ? 'Adding…'
     : quickAddState === 'added'
       ? 'Added to bag'
-      : `Quick add · ${quickAddVariant}`
+      : quickAddVariant
+        ? `Quick add · ${quickAddVariant}`
+        : 'Quick add'
 
   return (
     <article
@@ -75,7 +80,7 @@ export function ProductCard({
               variant === 'featured' ? 'aspect-[4/5] lg:aspect-[4/5]' : 'aspect-[4/5]',
             )}
             loading={priority ? 'eager' : 'lazy'}
-            src={product.image}
+            src={product.images[0]}
           />
         </Link>
 
@@ -98,7 +103,7 @@ export function ProductCard({
           <Heart aria-hidden="true" fill={isWishlisted ? 'currentColor' : 'none'} size={18} />
         </button>
 
-        <button
+        {product.priceInPaise !== null && <button
           aria-live="polite"
           aria-label={`${quickAddLabel} for ${product.catalogueName}`}
           className="absolute right-2.5 bottom-2.5 flex size-11 items-center justify-center rounded-full bg-ovia-ivory/96 text-ovia-plum shadow-sm backdrop-blur-md transition-[opacity,transform,background-color] duration-250 hover:bg-white active:translate-y-px disabled:cursor-wait lg:inset-x-4 lg:bottom-4 lg:h-11 lg:w-auto lg:gap-2 lg:rounded-none lg:px-3 lg:text-[0.68rem] lg:font-bold lg:tracking-[0.06em] lg:uppercase lg:translate-y-2 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:focus-visible:translate-y-0 lg:focus-visible:opacity-100"
@@ -109,7 +114,7 @@ export function ProductCard({
         >
           {quickAddState === 'added' ? <Check aria-hidden="true" size={16} /> : <Plus aria-hidden="true" size={16} />}
           <span className="sr-only lg:not-sr-only">{quickAddLabel}</span>
-        </button>
+        </button>}
       </div>
 
       <div className={classNames('pt-3', variant === 'featured' && 'lg:pb-2')}>
@@ -123,11 +128,13 @@ export function ProductCard({
         >
           {product.catalogueName}
         </Link>
-        <p className={classNames('mt-1 font-sans font-bold text-ovia-plum', variant === 'featured' ? 'text-base lg:text-lg' : 'text-[0.9rem] sm:text-base')}>
-          {formatInr(product.priceInPaise)}
-        </p>
-        <p className="mt-1.5 text-[0.7rem] tracking-[0.03em] text-ovia-muted sm:mt-2 sm:text-xs">
-          Sizes {product.sizes.join(' · ')}
+        {product.priceInPaise !== null && (
+          <p className={classNames('mt-1 font-sans font-bold text-ovia-plum', variant === 'featured' ? 'text-base lg:text-lg' : 'text-[0.9rem] sm:text-base')}>
+            {formatInr(product.priceInPaise)}
+          </p>
+        )}
+        <p className="mt-1.5 text-[0.7rem] tracking-[0.03em] text-ovia-muted capitalize sm:mt-2 sm:text-xs">
+          {product.category}
         </p>
       </div>
     </article>

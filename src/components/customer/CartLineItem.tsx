@@ -2,7 +2,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { sellableProducts } from '../../data/products'
-import { isDemoProduct } from '../../data/productTypes'
+import { formatProductSelection } from '../../data/productTypes'
 import { formatInr } from '../../lib/currency'
 import { useDemoStore, type CartLine } from '../../store/demoStore'
 
@@ -25,7 +25,7 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
 
   return (
     <article
-      className="grid grid-cols-[6.25rem_1fr] gap-3.5 border-b border-ovia-line py-6 last:border-b-0 sm:grid-cols-[7rem_1fr] sm:gap-4"
+      className="grid grid-cols-[5.5rem_1fr] gap-3 border-b border-ovia-line py-5 last:border-b-0 xs:grid-cols-[6.25rem_1fr] xs:gap-3.5 sm:grid-cols-[7rem_1fr] sm:gap-4 sm:py-6"
       data-testid={`cart-line-${product.slug}`}
     >
       <Link
@@ -35,7 +35,7 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
         <img
           alt={product.catalogueName}
           className="size-full object-cover"
-          src={product.image}
+          src={product.images[0]}
         />
       </Link>
       <div className="min-w-0">
@@ -47,10 +47,11 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
             >
               {product.catalogueName}
             </Link>
-            <p className="mt-1 text-sm text-ovia-muted">
-              Size <span className="font-semibold text-ovia-ink">{line.size}</span>
-              {line.color ? <span> · {line.color}</span> : null}
-            </p>
+            {formatProductSelection(product, line.selection) ? (
+              <p className="mt-1 text-sm text-ovia-muted">
+                {formatProductSelection(product, line.selection)}
+              </p>
+            ) : null}
           </div>
           <button
             aria-label={`Remove ${product.catalogueName} from bag`}
@@ -61,8 +62,12 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
             <Trash2 aria-hidden="true" size={17} />
           </button>
         </div>
-        <p className="mt-2 font-semibold text-ovia-plum">
-          {formatInr(product.priceInPaise * line.quantity)}
+        <p className="mt-2 font-semibold text-ovia-plum" data-testid="cart-line-total">
+          {formatInr(
+            product.priceInPaise === null
+              ? null
+              : product.priceInPaise * line.quantity,
+          )}
         </p>
         <div
           aria-label={`Quantity for ${product.catalogueName}`}
@@ -79,6 +84,7 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
           <span
             aria-live="polite"
             className="min-w-8 text-center text-sm font-semibold"
+            data-testid="cart-line-quantity"
           >
             {line.quantity}
           </span>
@@ -91,7 +97,7 @@ export function CartLineItem({ line, compact = false }: CartLineItemProps) {
             <Plus aria-hidden="true" size={15} />
           </button>
         </div>
-        {!compact && !isDemoProduct(product) && (
+        {!compact && product.status === 'sellable' && product.source.kind === 'real-screenshot' && (
           <span className="sr-only">
             Catalogue reference {product.source.fileName}
           </span>

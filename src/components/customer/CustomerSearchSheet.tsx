@@ -46,7 +46,7 @@ export function CustomerSearchSheet({ isOpen, onClose }: CustomerSearchSheetProp
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-70" role="dialog" aria-modal="true" aria-label="Search Ovia products">
+        <div className="fixed inset-0 z-70" role="dialog" aria-modal="true" aria-label="Search Jewellgalleria products">
           <motion.button
             animate={{ opacity: 1 }}
             aria-label="Close search"
@@ -66,14 +66,14 @@ export function CustomerSearchSheet({ isOpen, onClose }: CustomerSearchSheetProp
             <div className="mx-auto max-w-xl">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="type-eyebrow">Find your next Ovia piece</p>
-                  <h2 className="mt-1.5 font-display text-3xl">Search the edit</h2>
+                  <p className="type-eyebrow">Find your next Jewellgalleria piece</p>
+                  <h2 className="mt-1.5 font-display text-3xl">Search Jewellgalleria</h2>
                 </div>
                 <button aria-label="Close search" className="flex size-12 items-center justify-center rounded-full text-ovia-plum hover:bg-ovia-blush/55" onClick={onClose} type="button">
                   <X aria-hidden="true" size={21} />
                 </button>
               </div>
-              <label className="mt-6 flex min-h-14 items-center gap-3 rounded-full border border-ovia-primary/30 bg-white px-4 focus-within:border-ovia-primary focus-within:ring-3 focus-within:ring-ovia-primary/15">
+              <label className="mt-6 flex min-h-14 items-center gap-3 rounded-control border border-ovia-primary/30 bg-white px-4 focus-within:border-ovia-primary focus-within:ring-3 focus-within:ring-ovia-primary/15">
                 <Search aria-hidden="true" className="text-ovia-primary" size={19} />
                 <span className="sr-only">Search products</span>
                 <input
@@ -81,16 +81,16 @@ export function CustomerSearchSheet({ isOpen, onClose }: CustomerSearchSheetProp
                   className="customer-search-input min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ovia-muted/65"
                   data-testid="customer-search-input"
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search dresses, tops, kurtis…"
+                  placeholder="Search necklaces, earrings, bracelets…"
                   type="search"
                   value={query}
                 />
               </label>
-              <p className="mt-6 text-xs font-bold tracking-[0.12em] text-ovia-muted uppercase">{query ? 'Results' : 'Popular in the edit'}</p>
+              <p className="mt-6 text-xs font-bold tracking-[0.12em] text-ovia-muted uppercase">{query ? 'Results' : 'Catalogue highlights'}</p>
               <div className="mt-3 divide-y divide-ovia-line">
                 {results.map((product) => (
                   <Link className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 py-4" key={product.id} onClick={onClose} to={`/product/${product.slug}`}>
-                    <img alt="" className="aspect-[4/5] w-full bg-ovia-blush/25 object-cover" src={product.image} />
+                    <img alt="" className="aspect-[4/5] w-full bg-ovia-blush/25 object-cover" src={product.images[0]} />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-ovia-ink">{product.catalogueName}</p>
                       <p className="mt-1 text-sm font-bold text-ovia-plum">{formatInr(product.priceInPaise)}</p>

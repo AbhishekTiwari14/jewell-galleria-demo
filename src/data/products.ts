@@ -1,212 +1,359 @@
-import type { Product } from './productTypes'
+import type {
+  ProductCategory,
+  ProductImageGallery,
+  ProductVariantOption,
+  SellableProduct,
+} from './productTypes'
 
-export const products = [
-  {
-    id: 'ovia-001',
-    slug: 'lime-shells-corset-kurti',
-    catalogueName: 'Lime Shells Corset Kurti',
-    priceInPaise: 39_900,
-    sizes: ['S', 'M', 'L'],
-    colors: [
-      { label: 'Lime', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'kurti',
-    image: '/products/lime-shells-corset-kurti/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065518.png',
-      crop: { x: 50, y: 63, width: 320, height: 393 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-002',
-    slug: 'green-heart-corset-kurti',
-    catalogueName: 'Green Heart Corset Kurti🍀',
-    priceInPaise: 55_900,
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: [
+interface ProductDefinition {
+  id: string
+  slug: string
+  name: string
+  price: number | null
+  category: ProductCategory
+  description: string
+  color: string
+  images: ProductImageGallery
+  isDemoProduct: boolean
+  variantOptions?: readonly ProductVariantOption[]
+  source: SellableProduct['source']
+}
+
+function defineProduct(definition: ProductDefinition): SellableProduct {
+  const { color, variantOptions, ...product } = definition
+
+  return {
+    ...product,
+    catalogueName: definition.name,
+    nameProvenance: definition.isDemoProduct
+      ? 'generated-demo'
+      : 'descriptive-working-label',
+    priceInPaise:
+      definition.price === null ? null : definition.price * 100,
+    priceStatus: definition.isDemoProduct ? 'demo' : 'unknown',
+    attributes: [
       {
-        label: 'White with green heart details',
-        evidence: 'catalogue-photo',
-        selectable: false,
+        label: 'Visible appearance',
+        value: color,
+        evidence: definition.isDemoProduct
+          ? 'generated-demo'
+          : 'visual-source',
       },
     ],
-    category: 'kurti',
-    image: '/products/green-heart-corset-kurti/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065551.png',
-      crop: { x: 41, y: 59, width: 320, height: 399 },
-    },
+    variantOptions: variantOptions ?? [],
     status: 'sellable',
-  },
-  {
-    id: 'ovia-003',
-    slug: 'purple-shell-kurti',
-    catalogueName: 'Purple Shell Kurti💜',
-    priceInPaise: 45_900,
-    sizes: ['M', 'L', 'XL', 'XXL'],
-    colors: [
-      { label: 'Purple', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'kurti',
-    image: '/products/purple-shell-kurti/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065711.png',
-      crop: { x: 49, y: 63, width: 320, height: 398 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-004',
-    slug: 'beige-off-shoulder-one-piece',
-    catalogueName: 'Beige off shoulder one piece🔥',
-    priceInPaise: 99_900,
-    sizes: ['Free size'],
-    colors: [
-      { label: 'Beige', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'dress',
-    image: '/products/beige-off-shoulder-one-piece/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065741.png',
-      crop: { x: 49, y: 58, width: 320, height: 399 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-005',
-    slug: 'white-one-shoulder-piece',
-    catalogueName: 'White One shoulder piece🤍',
-    priceInPaise: 99_900,
-    sizes: ['S', 'M'],
-    colors: [
-      { label: 'White', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'dress',
-    image: '/products/white-one-shoulder-piece/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065802.png',
-      crop: { x: 48, y: 65, width: 320, height: 400 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-006',
-    slug: 'brown-off-shoulder-dress',
-    catalogueName: 'Brown Off Shoulder Dress',
-    priceInPaise: 119_900,
-    sizes: ['S', 'M'],
-    colors: [
-      { label: 'Brown', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'dress',
-    image: '/products/brown-off-shoulder-dress/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065825.png',
-      crop: { x: 44, y: 60, width: 320, height: 397 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-ref-065851',
-    slug: 'catalogue-item-065851',
-    catalogueName: null,
-    priceInPaise: null,
-    sizes: ['S', 'M', 'L'],
-    colors: [
-      { label: 'Black', evidence: 'catalogue-photo', selectable: false },
-    ],
-    category: null,
-    image: '/products/catalogue-item-065851/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065851.png',
-      crop: { x: 26, y: 42, width: 584, height: 465 },
-      notes: 'Name and price are not visible; retained as a reference-only item.',
-    },
-    status: 'reference-only',
-    reason: 'missing-name-and-price',
-  },
-  {
-    id: 'ovia-007',
-    slug: 'lace-trimmed-top',
-    catalogueName: 'Lace trimmed top',
-    priceInPaise: 49_900,
-    sizes: ['S'],
-    colors: [
-      { label: 'Red', evidence: 'explicitly-listed', selectable: true },
-      { label: 'Cream', evidence: 'explicitly-listed', selectable: true },
-      { label: 'Black', evidence: 'explicitly-listed', selectable: true },
-      { label: 'Brown', evidence: 'explicitly-listed', selectable: true },
-    ],
-    category: 'top',
-    image: '/products/lace-trimmed-top/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065916.png',
-      crop: { x: 87, y: 58, width: 257, height: 388 },
-      notes:
-        'Left edge is cropped to remove the overlaid carousel control without retouching the garment.',
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-008',
-    slug: 'waist-coat',
-    catalogueName: 'Waist Coat',
-    priceInPaise: 49_900,
-    sizes: ['S'],
-    colors: [
-      { label: 'Black', evidence: 'catalogue-photo', selectable: false },
-    ],
-    category: 'waistcoat',
-    image: '/products/waist-coat/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 065953.png',
-      crop: { x: 69, y: 58, width: 275, height: 389 },
-      notes: 'Left edge is cropped to remove the overlaid carousel control.',
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-009',
-    slug: 'brown-ombre-top',
-    catalogueName: 'Brown Ombre top',
-    priceInPaise: 59_900,
-    sizes: ['S'],
-    colors: [
-      { label: 'Brown', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'top',
-    image: '/products/brown-ombre-top/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 070014.png',
-      crop: { x: 46, y: 63, width: 320, height: 400 },
-    },
-    status: 'sellable',
-  },
-  {
-    id: 'ovia-010',
-    slug: 'red-ombre-top',
-    catalogueName: 'Red ombre top❤️',
-    priceInPaise: 59_900,
-    sizes: ['S'],
-    colors: [
-      { label: 'Red', evidence: 'catalogue-name', selectable: false },
-    ],
-    category: 'top',
-    image: '/products/red-ombre-top/primary.png',
-    source: {
-      fileName: 'Screenshot 2026-08-13 070038.png',
-      crop: { x: 39, y: 65, width: 291, height: 389 },
-      notes:
-        'Left edge is cropped to remove the overlaid carousel control without retouching the garment.',
-    },
-    status: 'sellable',
-  },
-] as const satisfies readonly Product[]
+  }
+}
 
-export const sellableProducts = products.filter(
-  (product) => product.status === 'sellable',
-)
+export const products = [
+  defineProduct({
+    id: 'jg-real-001',
+    slug: 'floral-drop-necklace',
+    name: 'Floral Drop Necklace',
+    price: null,
+    category: 'necklace',
+    description:
+      'A delicate necklace with alternating clear teardrop and floral motifs, presented exactly as visible in the supplied Jewellgalleria source.',
+    color: 'Yellow-tone with clear details',
+    images: [
+      '/products/real/floral-drop-necklace/hero.jpg',
+      '/products/real/floral-drop-necklace/detail-01.jpg',
+      '/products/real/floral-drop-necklace/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 045722.png',
+      notes:
+        'Descriptive working label only; official name and price are not supplied. Material, stone type, dimensions and rear closure are not established by the source.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-009',
+    slug: 'heritage-jhumka-earrings',
+    name: 'Heritage Jhumka Earrings',
+    price: null,
+    category: 'earrings',
+    description:
+      'An ornate front-facing pair with red, green and clear decorative details, bell-shaped drops and layered bead fringe.',
+    color: 'Yellow-tone with red, green and clear details',
+    images: [
+      '/products/real/heritage-jhumka-earrings/hero.jpg',
+      '/products/real/heritage-jhumka-earrings/detail-01.jpg',
+      '/products/real/heritage-jhumka-earrings/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050015.png',
+      notes:
+        'Front view only. Official name and price, material, stones and fastening are not supplied.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-010',
+    slug: 'pear-drop-statement-necklace',
+    name: 'Pear Drop Statement Necklace',
+    price: null,
+    category: 'necklace',
+    description:
+      'A symmetrical two-row necklace with clear square and pear-shaped elements, preserved from the supplied worn view.',
+    color: 'Yellow-tone with clear details',
+    images: [
+      '/products/real/pear-drop-statement-necklace/hero.jpg',
+      '/products/real/pear-drop-statement-necklace/detail-01.jpg',
+      '/products/real/pear-drop-statement-necklace/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050030.png',
+      notes:
+        'Front neckline view only. Official name and price, rear chain, clasp, materials and dimensions are not supplied.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-013',
+    slug: 'cascading-chandelier-earring',
+    name: 'Cascading Chandelier Earring',
+    price: null,
+    category: 'earrings',
+    description:
+      'A long chandelier design with a floral top and articulated strands of clear pear-shaped and round elements.',
+    color: 'Pale-tone with clear details',
+    images: [
+      '/products/real/cascading-chandelier-earring/hero.jpg',
+      '/products/real/cascading-chandelier-earring/detail-01.jpg',
+      '/products/real/cascading-chandelier-earring/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050135.png',
+      notes:
+        'Only one worn earring is visible. Official name and price, pairing, fastening, materials and dimensions require seller confirmation.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-005',
+    slug: 'pearl-floral-ear-climber',
+    name: 'Pearl-Like Floral Ear Climber',
+    price: null,
+    category: 'earrings',
+    description:
+      'A diagonal ear piece combining clear floral and leaf-like elements with several luminous pearl-like round details.',
+    color: 'Pale-tone with clear and pearl-like details',
+    images: [
+      '/products/real/pearl-floral-ear-climber/hero.jpg',
+      '/products/real/pearl-floral-ear-climber/detail-01.jpg',
+      '/products/real/pearl-floral-ear-climber/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050321.png',
+      notes:
+        'Canonical duplicate of 045911. Official name and price are not supplied. Only one worn front view is visible; pearl and stone materials are not claimed.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-004',
+    slug: 'two-row-statement-ring',
+    name: 'Two-Row Statement Ring',
+    price: null,
+    category: 'ring',
+    description:
+      'Two closely arranged rows of clear geometric elements, shown on the hand exactly as supplied.',
+    color: 'Pale-tone with clear details',
+    images: [
+      '/products/real/two-row-statement-ring/hero.jpg',
+      '/products/real/two-row-statement-ring/detail-01.jpg',
+      '/products/real/two-row-statement-ring/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 045854.png',
+      notes:
+        'Official name and price are not supplied. Seller confirmation is required on whether the visual is one multi-row ring or a coordinated stack. No hidden shank is reconstructed.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-011',
+    slug: 'solitaire-fan-earring',
+    name: 'Solitaire Fan Earring',
+    price: null,
+    category: 'earrings',
+    description:
+      'A large round clear stud above a shallow fan of five clear geometric drops, taken from the supplied worn view.',
+    color: 'Pale-tone with clear details',
+    images: [
+      '/products/real/solitaire-fan-earring/hero.jpg',
+      '/products/real/solitaire-fan-earring/detail-01.jpg',
+      '/products/real/solitaire-fan-earring/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050053.png',
+      notes:
+        'Official name and price are not supplied. Only one worn front view is visible; pairing, fastening, materials and dimensions are not supplied.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-015',
+    slug: 'toggle-pendant-necklace',
+    name: 'Toggle Pendant Necklace',
+    price: null,
+    category: 'necklace',
+    description:
+      'A circular-link necklace with a front toggle detail and an irregular luminous white centerpiece in a textured border.',
+    color: 'Yellow-tone with white centerpiece',
+    images: [
+      '/products/real/toggle-pendant-necklace/hero.jpg',
+      '/products/real/toggle-pendant-necklace/detail-01.jpg',
+      '/products/real/toggle-pendant-necklace/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 050235.png',
+      notes:
+        'Official name and price are not supplied. The white centerpiece material, rear chain and dimensions are not established by the supplied view.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-006',
+    slug: 'multicolour-oval-bracelet',
+    name: 'Multicolour Oval Bracelet',
+    price: null,
+    category: 'bracelet',
+    description:
+      'A fine bracelet with alternating multicoloured oval settings, retained from the supplied wrist view.',
+    color: 'Yellow-tone with multicoloured details',
+    images: [
+      '/products/real/multicolour-oval-bracelet/hero.jpg',
+      '/products/real/multicolour-oval-bracelet/detail-01.jpg',
+      '/products/real/multicolour-oval-bracelet/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 045927.png',
+      notes:
+        'Official name and price are not supplied. Only the visible front section is documented; clasp, materials and dimensions are not shown.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-real-008',
+    slug: 'oval-marquise-bracelet',
+    name: 'Oval and Marquise Bracelet',
+    price: null,
+    category: 'bracelet',
+    description:
+      'A delicate bracelet of pale oval settings and paired marquise-shaped details with a small pink accent.',
+    color: 'Yellow-tone with pale and pink details',
+    images: [
+      '/products/real/oval-marquise-bracelet/hero.jpg',
+      '/products/real/oval-marquise-bracelet/detail-01.jpg',
+      '/products/real/oval-marquise-bracelet/editorial.jpg',
+    ],
+    isDemoProduct: false,
+    source: {
+      kind: 'real-screenshot',
+      fileName: 'Screenshot 2026-08-17 045959.png',
+      notes:
+        'Official name and price are not supplied. Only the visible worn section is documented; clasp, materials and dimensions are not shown.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-demo-001',
+    slug: 'wave-station-ring',
+    name: 'Wave Station Ring',
+    price: 1_790,
+    category: 'ring',
+    description:
+      'A slender original wave-shaped demo ring with three clear round stations, created to add an everyday ring option to the private concept catalogue.',
+    color: 'Yellow-tone with clear details',
+    images: [
+      '/products/demo/wave-station-ring/hero.jpg',
+      '/products/demo/wave-station-ring/detail-01.jpg',
+      '/products/demo/wave-station-ring/detail-02.jpg',
+      '/products/demo/wave-station-ring/editorial.jpg',
+    ],
+    isDemoProduct: true,
+    variantOptions: [
+      {
+        id: 'ring-size',
+        name: 'Ring Size',
+        values: ['6', '7', '8'],
+      },
+    ],
+    source: {
+      kind: 'generated-demo',
+      fileName: '_source.png',
+      notes:
+        'Fictional product created for catalogue depth. This is not an actual Jewellgalleria catalogue item.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-demo-002',
+    slug: 'asymmetric-stone-huggies',
+    name: 'Asymmetric Stone Huggies',
+    price: 1_490,
+    category: 'earrings',
+    description:
+      'An original pair of rounded everyday demo huggies with a restrained asymmetric line of clear details.',
+    color: 'Yellow-tone with clear details',
+    images: [
+      '/products/demo/asymmetric-stone-huggies/hero.jpg',
+      '/products/demo/asymmetric-stone-huggies/detail-01.jpg',
+      '/products/demo/asymmetric-stone-huggies/detail-02.jpg',
+      '/products/demo/asymmetric-stone-huggies/editorial.jpg',
+    ],
+    isDemoProduct: true,
+    source: {
+      kind: 'generated-demo',
+      fileName: '_source.png',
+      notes:
+        'Fictional product created for catalogue depth. This is not an actual Jewellgalleria catalogue item.',
+    },
+  }),
+  defineProduct({
+    id: 'jg-demo-003',
+    slug: 'seven-station-anklet',
+    name: 'Seven Station Anklet',
+    price: 1_690,
+    category: 'anklet',
+    description:
+      'An original fine-chain demo anklet with seven evenly spaced clear stations and a visible clasp.',
+    color: 'Yellow-tone with clear details',
+    images: [
+      '/products/demo/seven-station-anklet/hero.jpg',
+      '/products/demo/seven-station-anklet/detail-01.jpg',
+      '/products/demo/seven-station-anklet/detail-02.jpg',
+      '/products/demo/seven-station-anklet/editorial.jpg',
+    ],
+    isDemoProduct: true,
+    variantOptions: [
+      {
+        id: 'length',
+        name: 'Length',
+        values: ['9 in', '10 in'],
+      },
+    ],
+    source: {
+      kind: 'generated-demo',
+      fileName: '_source.png',
+      notes:
+        'Fictional product created for catalogue depth. This is not an actual Jewellgalleria catalogue item.',
+    },
+  }),
+] as const satisfies readonly SellableProduct[]
+
+export const realProducts = products.filter((product) => !product.isDemoProduct)
+export const demoProducts = products.filter((product) => product.isDemoProduct)
+export const sellableProducts = [...realProducts, ...demoProducts]
 
 export function findProductBySlug(slug: string) {
   return products.find((product) => product.slug === slug)

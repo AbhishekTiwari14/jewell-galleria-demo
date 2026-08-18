@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
     element: (
       <FoundationPage
         area="customer"
-        description="The page you’re looking for isn’t available. Return to the Ovia edit to keep browsing."
+        description="The page you’re looking for isn’t available. Return to the Jewellgalleria edit to keep browsing."
         title="Page not found"
       />
     ),

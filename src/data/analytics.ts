@@ -38,7 +38,7 @@ export const analyticsPeriods: Array<{
 export const analyticsSnapshots: Record<AnalyticsPeriod, AnalyticsSnapshot> = {
   daily: {
     label: 'Today',
-    range: '13 August 2026',
+    range: '17 August 2026',
     revenueInPaise: 276_600,
     sessions: 612,
     productViews: 392,
@@ -55,23 +55,23 @@ export const analyticsSnapshots: Record<AnalyticsPeriod, AnalyticsSnapshot> = {
     ],
     insights: [
       {
-        productId: 'ovia-005',
+        productId: 'jg-real-010',
         eyebrow: 'Product interest',
-        title: 'One-shoulder styles lead today’s demo interest.',
+        title: 'Pear Drop Statement Necklace is receiving the highest demo product views.',
         description:
-          'White One shoulder piece is receiving strong simulated product-view activity.',
+          'This illustrative signal uses fabricated browsing activity for the selected period.',
       },
       {
-        productId: 'ovia-007',
+        productId: 'jg-real-008',
         eyebrow: 'Stock watch',
-        title: 'Lace trimmed top is nearing its demo low-stock threshold.',
+        title: 'Oval and Marquise Bracelet is approaching its demo low-stock threshold.',
         description:
-          'Its simulated stock is close enough to merit an inventory check before promotion.',
+          'This illustrative stock prompt uses demo inventory and is not a real Jewellgalleria alert.',
       },
       {
-        productId: 'ovia-006',
+        productId: 'jg-real-009',
         eyebrow: 'Funnel opportunity',
-        title: 'Drop-off is highest between product view and add to bag.',
+        title: 'Demo drop-off is highest between product view and add to bag.',
         description:
           'This is a fabricated demo signal intended to illustrate a merchandising opportunity.',
       },
@@ -79,7 +79,7 @@ export const analyticsSnapshots: Record<AnalyticsPeriod, AnalyticsSnapshot> = {
   },
   weekly: {
     label: 'This week',
-    range: '7–13 August 2026',
+    range: '11–17 August 2026',
     revenueInPaise: 1_864_200,
     sessions: 4_238,
     productViews: 2_870,
@@ -98,25 +98,25 @@ export const analyticsSnapshots: Record<AnalyticsPeriod, AnalyticsSnapshot> = {
     ],
     insights: [
       {
-        productId: 'ovia-006',
+        productId: 'jg-real-009',
         eyebrow: 'Style momentum',
-        title: 'Off-shoulder dresses sustain high demo interest this week.',
+        title: 'Heritage Jhumka Earrings is receiving the highest demo product views.',
         description:
-          'Brown Off Shoulder Dress appears repeatedly in this simulated browsing journey.',
+          'This illustrative signal uses fabricated browsing activity for the selected period.',
       },
       {
-        productId: 'ovia-007',
+        productId: 'jg-real-008',
         eyebrow: 'Stock watch',
-        title: 'Lace trimmed top remains close to the demo threshold.',
+        title: 'Oval and Marquise Bracelet is approaching its demo low-stock threshold.',
         description:
-          'The simulated stock position could constrain a future campaign if left unchanged.',
+          'This illustrative stock prompt uses demo inventory and is not a real Jewellgalleria alert.',
       },
       {
-        productId: 'ovia-002',
+        productId: 'jg-real-001',
         eyebrow: 'Funnel opportunity',
-        title: 'View-to-bag remains the largest weekly demo drop-off.',
+        title: 'Demo drop-off is highest between product view and add to bag.',
         description:
-          'Clearer size guidance could be explored in a real implementation and measured properly.',
+          'This fabricated funnel pattern illustrates where a real team might investigate merchandising performance.',
       },
     ],
   },
@@ -138,25 +138,25 @@ export const analyticsSnapshots: Record<AnalyticsPeriod, AnalyticsSnapshot> = {
     ],
     insights: [
       {
-        productId: 'ovia-002',
+        productId: 'jg-real-010',
         eyebrow: 'Category interest',
-        title: 'Corset kurtis drive deeper browsing in the monthly demo.',
+        title: 'Pear Drop Statement Necklace is receiving the highest demo product views.',
         description:
-          'Green Heart Corset Kurti represents the strongest simulated interest in the kurti edit.',
+          'This illustrative signal uses fabricated browsing activity for the selected period.',
       },
       {
-        productId: 'ovia-007',
+        productId: 'jg-real-008',
         eyebrow: 'Stock watch',
-        title: 'Lace trimmed top continues to sit near demo low stock.',
+        title: 'Oval and Marquise Bracelet is approaching its demo low-stock threshold.',
         description:
-          'A replenishment reminder would help connect simulated demand with inventory planning.',
+          'This illustrative stock prompt uses demo inventory and is not a real Jewellgalleria alert.',
       },
       {
-        productId: 'ovia-005',
+        productId: 'jg-real-013',
         eyebrow: 'Funnel opportunity',
-        title: 'One-shoulder interest outpaces add-to-bag intent.',
+        title: 'Demo drop-off is highest between product view and add to bag.',
         description:
-          'This fictional pattern demonstrates where richer product detail could be tested.',
+          'This fabricated funnel pattern illustrates where a real team might investigate merchandising performance.',
       },
     ],
   },

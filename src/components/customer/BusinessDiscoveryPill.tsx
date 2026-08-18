@@ -45,7 +45,7 @@ export function BusinessDiscoveryPill() {
             to="/business"
           >
             <Sparkles aria-hidden="true" className="shrink-0 text-ovia-primary" size={15} />
-            <span>See how Ovia runs behind the scenes</span>
+            <span>See how Jewellgalleria runs behind the scenes</span>
             <ArrowRight aria-hidden="true" className="shrink-0" size={15} />
           </Link>
           <button

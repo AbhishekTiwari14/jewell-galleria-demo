@@ -23,16 +23,16 @@ export function FoundationPage({
       <Container>
         <div className="mx-auto flex min-h-[58vh] max-w-xl flex-col items-center justify-center text-center">
           <p className="mb-3 text-xs font-bold tracking-[0.14em] text-ovia-primary uppercase">
-            Ovia Closet
+            Jewellgalleria
           </p>
           <Heading>{title}</Heading>
           <Text className="mt-4" tone="muted">{description}</Text>
           <Link
-            className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-ovia-primary px-6 text-sm font-bold text-white transition-colors hover:bg-ovia-plum"
+            className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-ovia-primary px-6 text-sm font-bold text-white transition-colors hover:bg-ovia-plum"
             to={area === 'business' ? '/business' : '/'}
           >
             <ArrowLeft aria-hidden="true" size={17} />
-            {area === 'business' ? 'Return to business' : 'Return to the Ovia edit'}
+            {area === 'business' ? 'Return to business' : 'Return to the Jewellgalleria edit'}
           </Link>
         </div>
       </Container>

@@ -8,7 +8,7 @@ export function DemoModeIndicator() {
       role="status"
     >
       <FlaskConical aria-hidden="true" size={12} strokeWidth={1.8} />
-      <span>Demo mode</span>
+      <span>DEMO MODE</span>
       <span aria-hidden="true">•</span>
       <span className="font-medium normal-case tracking-normal">
         Simulated business data

@@ -1,85 +1,119 @@
-export type ProductCategory = 'kurti' | 'dress' | 'top' | 'waistcoat'
+export type ProductCategory =
+  | 'necklace'
+  | 'earrings'
+  | 'bracelet'
+  | 'ring'
+  | 'anklet'
 
-export type ProductSize = 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'Free size'
+export type ProductImageGallery = readonly [string, ...string[]]
 
-export type ColorEvidence =
-  | 'explicitly-listed'
-  | 'catalogue-name'
-  | 'catalogue-photo'
+export type ProductNameProvenance =
+  | 'descriptive-working-label'
+  | 'generated-demo'
+
+export type ProductAttributeEvidence =
+  | 'visual-source'
+  | 'generated-demo'
   | 'demo-entered'
 
-export interface ProductColor {
+export interface ProductAttribute {
   label: string
-  evidence: ColorEvidence
-  selectable: boolean
+  value: string
+  evidence: ProductAttributeEvidence
 }
 
-export interface CropRectangle {
-  x: number
-  y: number
-  width: number
-  height: number
+export type JewelleryOptionName =
+  | 'Ring Size'
+  | 'Finish'
+  | 'Color'
+  | 'Length'
+  | 'Stone'
+
+export interface ProductVariantOption {
+  id: string
+  name: JewelleryOptionName
+  values: readonly [string, ...string[]]
 }
+
+export type ProductSelection = Readonly<Record<string, string>>
 
 export interface CatalogueSource {
+  kind: 'real-screenshot' | 'generated-demo'
   fileName: string
-  crop: CropRectangle
   notes?: string
 }
 
 interface ProductIdentity {
   id: string
   slug: string
-  sizes: readonly ProductSize[]
-  colors: readonly ProductColor[]
-  image: string
+  name: string
+  catalogueName: string
+  nameProvenance: ProductNameProvenance
+  price: number | null
+  priceInPaise: number | null
+  priceStatus: 'unknown' | 'demo'
+  category: ProductCategory
+  description: string
+  attributes: readonly ProductAttribute[]
+  variantOptions: readonly ProductVariantOption[]
+  images: ProductImageGallery
+  isDemoProduct: boolean
 }
 
-interface CatalogueProductBase extends ProductIdentity {
-  catalogueName: string | null
-  priceInPaise: number | null
-  category: ProductCategory | null
+export interface SellableProduct extends ProductIdentity {
+  status: 'sellable'
   source: CatalogueSource
 }
 
-export interface SellableProduct extends CatalogueProductBase {
-  status: 'sellable'
-  catalogueName: string
-  priceInPaise: number
-  category: ProductCategory
-}
-
-export interface ReferenceOnlyProduct extends CatalogueProductBase {
-  status: 'reference-only'
-  reason: 'missing-name-and-price'
-  catalogueName: null
-  priceInPaise: null
-  category: null
-}
-
-export type Product = SellableProduct | ReferenceOnlyProduct
+export type Product = SellableProduct
 
 export type DemoProductStatus = 'active' | 'draft'
 
 export interface DemoProduct extends ProductIdentity {
   status: 'demo-created'
-  catalogueName: string
-  priceInPaise: number
-  category: ProductCategory
+  isDemoProduct: true
   publicationStatus: DemoProductStatus
-  description: string
   createdAt: string
   updatedAt: string
 }
 
 export type CommerceProduct = SellableProduct | DemoProduct
 
-export function isDemoProduct(
-  product: CommerceProduct,
-): product is DemoProduct {
-  return product.status === 'demo-created'
+export function isDemoProduct(product: CommerceProduct) {
+  return product.isDemoProduct
 }
 
 export function isProductActive(product: CommerceProduct) {
   return product.status === 'sellable' || product.publicationStatus === 'active'
+}
+
+export function getDefaultSelection(product: CommerceProduct): ProductSelection {
+  return Object.fromEntries(
+    product.variantOptions.map((option) => [option.id, option.values[0]]),
+  )
+}
+
+export function getProductSelections(
+  product: CommerceProduct,
+): ProductSelection[] {
+  return product.variantOptions.reduce<ProductSelection[]>(
+    (combinations, option) =>
+      combinations.flatMap((combination) =>
+        option.values.map((value) => ({ ...combination, [option.id]: value })),
+      ),
+    [{}],
+  )
+}
+
+export function formatProductSelection(
+  product: CommerceProduct,
+  selection: ProductSelection,
+) {
+  return product.variantOptions
+    .map((option) => {
+      const value = selection[option.id]
+      return value ? `${option.name}: ${value}` : null
+    })
+    .filter((value): value is string => value !== null)
+    .join(' · ')
 }

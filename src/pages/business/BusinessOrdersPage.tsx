@@ -1,4 +1,4 @@
-import { Check, ChevronRight, Package, X } from 'lucide-react'
+import { Check, CheckCircle2, ChevronRight, Circle, Package, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -8,11 +8,16 @@ import { OrderStatusBadge } from '../../components/business/OrderStatusBadge'
 import { Button } from '../../components/ui/Button'
 import { Container } from '../../components/layout/LayoutPrimitives'
 import { sellableProducts } from '../../data/products'
+import {
+  formatProductSelection,
+  type CommerceProduct,
+} from '../../data/productTypes'
 import { classNames } from '../../lib/classNames'
 import { formatInr } from '../../lib/currency'
 import { orderStatusLabels } from '../../lib/orders'
 import {
   type DemoOrder,
+  type DemoPaymentStatus,
   type DemoOrderStatus,
   useDemoStore,
 } from '../../store/demoStore'
@@ -20,6 +25,14 @@ import {
 type OrderFilter = 'all' | DemoOrderStatus
 
 const orderStatuses = Object.keys(orderStatusLabels) as DemoOrderStatus[]
+
+const fulfilmentTimeline: DemoOrderStatus[] = [
+  'new',
+  'confirmed',
+  'packed',
+  'shipped',
+  'delivered',
+]
 
 const filters: Array<{ value: OrderFilter; label: string }> = [
   { value: 'all', label: 'All' },
@@ -42,9 +55,65 @@ function itemCount(order: DemoOrder) {
   return order.items.reduce((total, item) => total + item.quantity, 0)
 }
 
+function itemSummary(
+  order: DemoOrder,
+  commerceProducts: readonly CommerceProduct[],
+) {
+  const names = order.items
+    .map((item) =>
+      commerceProducts.find((product) => product.id === item.productId)
+        ?.catalogueName,
+    )
+    .filter((name): name is string => Boolean(name))
+
+  if (names.length === 0) {
+    const count = itemCount(order)
+    return `${count} ${count === 1 ? 'item' : 'items'}`
+  }
+  return names.length === 1 ? names[0] : `${names[0]} +${names.length - 1} more`
+}
+
+function OrderTimeline({ status }: { status: DemoOrderStatus }) {
+  const statuses: DemoOrderStatus[] =
+    status === 'cancelled' ? ['new', 'cancelled'] : fulfilmentTimeline
+  const currentIndex = statuses.indexOf(status)
+
+  return (
+    <ol className="mt-4" data-testid="order-timeline">
+      {statuses.map((timelineStatus, index) => {
+        const completed = index < currentIndex
+        const current = timelineStatus === status
+        return (
+          <li className="relative flex gap-3 pb-5 last:pb-0" data-testid={`timeline-status-${timelineStatus}`} key={timelineStatus}>
+            {index < statuses.length - 1 && (
+              <span aria-hidden="true" className={classNames('absolute top-6 left-[0.6875rem] h-[calc(100%-0.35rem)] w-px', completed ? 'bg-ovia-primary' : 'bg-ovia-line')} />
+            )}
+            <span className={classNames('relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-white', completed || current ? 'text-ovia-primary' : 'text-ovia-muted/45')}>
+              {completed ? <CheckCircle2 aria-hidden="true" size={20} /> : <Circle aria-hidden="true" fill={current ? 'currentColor' : 'none'} size={current ? 14 : 18} />}
+            </span>
+            <span>
+              <span className={classNames('block text-sm font-bold', current ? 'text-ovia-primary' : completed ? 'text-ovia-ink' : 'text-ovia-muted')}>{orderStatusLabels[timelineStatus]}</span>
+              <span className="mt-0.5 block text-xs text-ovia-muted">{current ? 'Current demo status' : completed ? 'Completed demo stage' : 'Pending'}</span>
+            </span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+function paymentStatusLabel(status: DemoPaymentStatus, detailed = false) {
+  if (status === 'cod') return 'Cash on delivery'
+  if (status === 'demo') {
+    return detailed ? 'Demo payment — no charge' : 'Demo payment'
+  }
+  return detailed ? 'Paid online' : 'Paid'
+}
+
 export function BusinessOrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const orders = useDemoStore((state) => state.orders)
+  const createdProducts = useDemoStore((state) => state.createdProducts)
   const updateOrderStatus = useDemoStore((state) => state.updateOrderStatus)
   const initialOrderId = searchParams.get('order')
   const [filter, setFilter] = useState<OrderFilter>('all')
@@ -53,13 +122,17 @@ export function BusinessOrdersPage() {
   )
   const selectedOrder = orders.find((order) => order.id === selectedOrderId)
   const [draftStatus, setDraftStatus] = useState<DemoOrderStatus>(
-    selectedOrder?.status ?? 'confirmed',
+    selectedOrder?.status ?? 'new',
   )
   const [toast, setToast] = useState<string | null>(null)
 
   const sortedOrders = useMemo(
     () => [...orders].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [orders],
+  )
+  const commerceProducts = useMemo(
+    () => [...sellableProducts, ...createdProducts],
+    [createdProducts],
   )
   const visibleOrders =
     filter === 'all'
@@ -102,7 +175,7 @@ export function BusinessOrdersPage() {
                 <button
                   aria-pressed={filter === value}
                   className={classNames(
-                    'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm font-bold transition-colors',
+                    'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm font-bold transition-colors',
                     filter === value
                       ? 'border-ovia-primary bg-ovia-primary text-white'
                       : 'border-ovia-line bg-white text-ovia-muted hover:border-ovia-logo hover:text-ovia-plum',
@@ -120,38 +193,63 @@ export function BusinessOrdersPage() {
           </div>
         </div>
 
-        <div className="hidden grid-cols-[1.15fr_1fr_0.8fr_0.75fr_1rem] gap-4 border-b border-ovia-line bg-ovia-ivory/60 px-6 py-3 text-[0.68rem] font-bold tracking-[0.1em] text-ovia-muted uppercase md:grid">
-          <span>Order</span><span>Customer</span><span>Status</span><span className="text-right">Total</span><span />
+        <div className="hidden grid-cols-[1.05fr_1fr_1.3fr_0.72fr_0.75fr_0.8fr_1rem] gap-4 border-b border-ovia-line bg-ovia-ivory/60 px-6 py-3 text-[0.68rem] font-bold tracking-[0.1em] text-ovia-muted uppercase md:grid">
+          <span>Order ID</span><span>Customer</span><span>Items</span><span className="text-right">Total</span><span>Status</span><span>Date</span><span />
         </div>
 
         <div className="divide-y divide-ovia-line">
-          {visibleOrders.map((order) => (
-            <button
-              className="grid w-full gap-3 px-4 py-4 text-left transition-colors hover:bg-ovia-ivory md:grid-cols-[1.15fr_1fr_0.8fr_0.75fr_1rem] md:items-center md:gap-4 md:px-6"
-              data-testid={`open-order-${order.id}`}
-              key={order.id}
-              onClick={() => openOrder(order)}
-              type="button"
-            >
-              <span className="flex items-center justify-between gap-3 md:block">
-                <span>
-                  <span className="block text-sm font-bold text-ovia-ink">{order.id}</span>
-                  <span className="mt-1 block text-xs text-ovia-muted">{formatOrderDate(order.createdAt)} · {itemCount(order)} {itemCount(order) === 1 ? 'item' : 'items'}</span>
+          {visibleOrders.map((order) => {
+            const summary = itemSummary(order, commerceProducts)
+            return (
+              <button
+                aria-label={`Open order ${order.id}`}
+                className="w-full px-4 py-4 text-left transition-colors hover:bg-ovia-ivory md:grid md:grid-cols-[1.05fr_1fr_1.3fr_0.72fr_0.75fr_0.8fr_1rem] md:items-center md:gap-4 md:px-6"
+                data-testid={`open-order-${order.id}`}
+                key={order.id}
+                onClick={() => openOrder(order)}
+                type="button"
+              >
+                <span className="block md:hidden">
+                  <span className="flex items-start justify-between gap-3">
+                    <span>
+                      <span className="block text-sm font-bold text-ovia-ink">{order.id}</span>
+                      <span className="mt-1 block text-xs text-ovia-muted">{formatOrderDate(order.createdAt)}</span>
+                    </span>
+                    <OrderStatusBadge status={order.status} />
+                  </span>
+                  <span className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-ovia-line pt-4">
+                    <span>
+                      <span className="block text-[0.68rem] font-bold tracking-[0.08em] text-ovia-muted uppercase">Customer</span>
+                      <span className="mt-1 block text-sm font-semibold text-ovia-ink">{order.customerName}</span>
+                    </span>
+                    <span>
+                      <span className="block text-[0.68rem] font-bold tracking-[0.08em] text-ovia-muted uppercase">Total</span>
+                      <span className="mt-1 block text-sm font-bold text-ovia-ink">{formatInr(order.amountInPaise)}</span>
+                    </span>
+                    <span className="col-span-2">
+                      <span className="block text-[0.68rem] font-bold tracking-[0.08em] text-ovia-muted uppercase">Items</span>
+                      <span className="mt-1 block line-clamp-2 text-sm font-semibold text-ovia-ink">{summary}</span>
+                      <span className="mt-1 block text-xs text-ovia-muted">{itemCount(order)} {itemCount(order) === 1 ? 'item' : 'items'} · {order.shippingCity} · {paymentStatusLabel(order.paymentStatus)}</span>
+                    </span>
+                  </span>
                 </span>
-                <span className="md:hidden"><OrderStatusBadge status={order.status} /></span>
-              </span>
-              <span>
-                <span className="block text-sm font-semibold text-ovia-ink">{order.customerName}</span>
-                <span className="mt-1 block text-xs text-ovia-muted">{order.shippingCity} · {order.paymentStatus === 'cod' ? 'Cash on delivery' : 'Paid'}</span>
-              </span>
-              <span className="hidden md:block"><OrderStatusBadge status={order.status} /></span>
-              <span className="flex items-center justify-between text-sm font-bold text-ovia-ink md:block md:text-right">
-                <span className="text-xs font-medium text-ovia-muted md:hidden">Order total</span>
-                {formatInr(order.amountInPaise)}
-              </span>
-              <ChevronRight aria-hidden="true" className="hidden text-ovia-muted/60 md:block" size={17} />
-            </button>
-          ))}
+
+                <span className="hidden text-sm font-bold text-ovia-ink md:block">{order.id}</span>
+                <span className="hidden md:block">
+                  <span className="block text-sm font-semibold text-ovia-ink">{order.customerName}</span>
+                  <span className="mt-1 block text-xs text-ovia-muted">{order.shippingCity}</span>
+                </span>
+                <span className="hidden min-w-0 md:block">
+                  <span className="block truncate text-sm font-semibold text-ovia-ink">{summary}</span>
+                  <span className="mt-1 block text-xs text-ovia-muted">{itemCount(order)} {itemCount(order) === 1 ? 'item' : 'items'}</span>
+                </span>
+                <span className="hidden text-right text-sm font-bold text-ovia-ink md:block">{formatInr(order.amountInPaise)}</span>
+                <span className="hidden md:block"><OrderStatusBadge status={order.status} /></span>
+                <span className="hidden text-xs text-ovia-muted md:block">{formatOrderDate(order.createdAt)}</span>
+                <ChevronRight aria-hidden="true" className="hidden text-ovia-muted/60 md:block" size={17} />
+              </button>
+            )
+          })}
           {visibleOrders.length === 0 && (
             <div className="px-5 py-14 text-center">
               <Package aria-hidden="true" className="mx-auto text-ovia-logo" size={28} />
@@ -191,16 +289,17 @@ export function BusinessOrdersPage() {
                   <h2 className="mt-1 font-display text-2xl text-ovia-ink" id="order-detail-title">{selectedOrder.id}</h2>
                   <p className="mt-1 text-xs text-ovia-muted">Placed {formatOrderDate(selectedOrder.createdAt, true)}</p>
                 </div>
-                <button aria-label="Close order details" className="flex size-10 shrink-0 items-center justify-center rounded-full text-ovia-muted hover:bg-ovia-blush/40 hover:text-ovia-plum" onClick={closeOrder} type="button">
+                <button aria-label="Close order details" className="flex size-11 shrink-0 items-center justify-center rounded-full text-ovia-muted hover:bg-ovia-blush/40 hover:text-ovia-plum" onClick={closeOrder} type="button">
                   <X aria-hidden="true" size={19} />
                 </button>
               </div>
 
               <div className="p-5 sm:p-6">
-                <div className="grid gap-3 rounded-2xl bg-ovia-ivory p-4 sm:grid-cols-2">
+                <h3 className="text-sm font-bold text-ovia-ink">Customer details</h3>
+                <div className="mt-3 grid gap-3 rounded-2xl bg-ovia-ivory p-4 sm:grid-cols-2">
                   <div><p className="text-xs text-ovia-muted">Customer</p><p className="mt-1 text-sm font-bold text-ovia-ink">{selectedOrder.customerName}</p></div>
                   <div><p className="text-xs text-ovia-muted">Delivery city</p><p className="mt-1 text-sm font-bold text-ovia-ink">{selectedOrder.shippingCity}</p></div>
-                  <div><p className="text-xs text-ovia-muted">Payment</p><p className="mt-1 text-sm font-bold text-ovia-ink">{selectedOrder.paymentStatus === 'cod' ? 'Cash on delivery' : 'Paid online'}</p></div>
+                  <div><p className="text-xs text-ovia-muted">Payment</p><p className="mt-1 text-sm font-bold text-ovia-ink">{paymentStatusLabel(selectedOrder.paymentStatus, true)}</p></div>
                   <div><p className="text-xs text-ovia-muted">Current status</p><div className="mt-1"><OrderStatusBadge status={selectedOrder.status} /></div></div>
                 </div>
 
@@ -208,16 +307,28 @@ export function BusinessOrdersPage() {
                   <h3 className="text-sm font-bold text-ovia-ink">Order items</h3>
                   <div className="mt-3 divide-y divide-ovia-line border-y border-ovia-line">
                     {selectedOrder.items.map((item) => {
-                      const product = sellableProducts.find((candidate) => candidate.id === item.productId)
+                      const product = commerceProducts.find((candidate) => candidate.id === item.productId)
                       if (!product) return null
                       return (
-                        <div className="flex items-center gap-3 py-3" key={`${item.productId}-${item.size}`}>
-                          <img alt="" className="size-16 rounded-xl bg-ovia-ivory object-cover object-top" src={product.image} />
+                        <div className="grid grid-cols-[4rem_minmax(0,1fr)] gap-3 py-3 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center" data-testid={`order-detail-item-${product.slug}`} key={`${item.productId}-${JSON.stringify(item.selection)}`}>
+                          <img alt="" className="size-16 rounded-xl bg-ovia-ivory object-cover object-top" src={product.images[0]} />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-bold text-ovia-ink">{product.catalogueName}</p>
-                            <p className="mt-1 text-xs text-ovia-muted">Size {item.size} · Qty {item.quantity}</p>
+                            <p className="mt-1 text-xs text-ovia-muted">
+                              {formatProductSelection(product, item.selection)
+                                ? `${formatProductSelection(product, item.selection)} · `
+                                : ''}
+                              Qty {item.quantity}
+                            </p>
+                            <p className="mt-1 text-xs text-ovia-muted">{formatInr(product.priceInPaise)} each</p>
                           </div>
-                          <p className="text-sm font-bold text-ovia-ink">{formatInr(product.priceInPaise * item.quantity)}</p>
+                          <p className="col-start-2 text-sm font-bold text-ovia-ink sm:col-start-auto">
+                            {formatInr(
+                              product.priceInPaise === null
+                                ? null
+                                : product.priceInPaise * item.quantity,
+                            )}
+                          </p>
                         </div>
                       )
                     })}
@@ -227,6 +338,12 @@ export function BusinessOrdersPage() {
                     <span className="text-lg font-bold text-ovia-ink">{formatInr(selectedOrder.amountInPaise)}</span>
                   </div>
                 </div>
+
+                <section className="mt-7 rounded-2xl border border-ovia-line p-4" aria-labelledby="order-timeline-heading">
+                  <h3 className="text-sm font-bold text-ovia-ink" id="order-timeline-heading">Order timeline</h3>
+                  <p className="mt-1 text-xs leading-5 text-ovia-muted">Illustrative fulfilment stages only. No physical shipment is taking place.</p>
+                  <OrderTimeline status={selectedOrder.status} />
+                </section>
 
                 <div className="mt-7 rounded-2xl border border-ovia-line p-4">
                   <label className="block text-sm font-bold text-ovia-ink" htmlFor="demo-order-status">Update demo status</label>

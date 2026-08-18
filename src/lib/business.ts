@@ -1,7 +1,9 @@
 import {
-  isDemoProduct,
+  formatProductSelection,
+  getProductSelections,
   isProductActive,
   type CommerceProduct,
+  type ProductSelection,
 } from '../data/productTypes'
 import {
   getVariantKey,
@@ -11,8 +13,8 @@ import {
 
 export interface LowStockVariant {
   product: CommerceProduct
-  size: string
-  color?: string
+  selection: ProductSelection
+  label: string
   quantity: number
 }
 
@@ -20,24 +22,9 @@ export function getProductStock(
   product: CommerceProduct,
   inventoryByVariant: Record<string, number>,
 ) {
-  if (isDemoProduct(product)) {
-    return product.colors.reduce(
-      (productTotal, color) =>
-        productTotal + product.sizes.reduce(
-          (colorTotal, size) =>
-            colorTotal +
-            (inventoryByVariant[
-              getVariantKey(product.id, size, color.label)
-            ] ?? 0),
-          0,
-        ),
-      0,
-    )
-  }
-
-  return product.sizes.reduce(
-    (total, size) =>
-      total + (inventoryByVariant[getVariantKey(product.id, size)] ?? 0),
+  return getProductSelections(product).reduce(
+    (total, selection) =>
+      total + (inventoryByVariant[getVariantKey(product.id, selection)] ?? 0),
     0,
   )
 }
@@ -46,28 +33,22 @@ export function getLowStockVariants(
   products: readonly CommerceProduct[],
   inventoryByVariant: Record<string, number>,
 ): LowStockVariant[] {
-  return products.filter(isProductActive).flatMap<LowStockVariant>((product) => {
-    if (isDemoProduct(product)) {
-      return product.colors.flatMap((color) =>
-        product.sizes.flatMap((size) => {
-          const quantity =
-            inventoryByVariant[
-              getVariantKey(product.id, size, color.label)
-            ] ?? 0
-          return quantity <= LOW_STOCK_THRESHOLD
-            ? [{ product, size, color: color.label, quantity }]
-            : []
-        }),
-      )
-    }
-
-    return product.sizes.flatMap((size) => {
-      const quantity = inventoryByVariant[getVariantKey(product.id, size)] ?? 0
+  return products.filter(isProductActive).flatMap<LowStockVariant>((product) =>
+    getProductSelections(product).flatMap((selection) => {
+      const quantity =
+        inventoryByVariant[getVariantKey(product.id, selection)] ?? 0
       return quantity <= LOW_STOCK_THRESHOLD
-        ? [{ product, size, quantity }]
+        ? [
+            {
+              product,
+              selection,
+              label: formatProductSelection(product, selection) || 'Standard item',
+              quantity,
+            },
+          ]
         : []
-    })
-  })
+    }),
+  )
 }
 
 export function getBusinessMetrics(
@@ -75,9 +56,11 @@ export function getBusinessMetrics(
   orders: DemoOrder[],
   inventoryByVariant: Record<string, number>,
 ) {
-  const revenueOrders = orders.filter((order) => order.status !== 'cancelled')
+  const revenueOrders = orders.filter(
+    (order) => order.status !== 'cancelled' && order.amountInPaise !== null,
+  )
   const revenue = revenueOrders.reduce(
-    (total, order) => total + order.amountInPaise,
+    (total, order) => total + (order.amountInPaise ?? 0),
     0,
   )
   const inventoryUnits = Object.values(inventoryByVariant).reduce(

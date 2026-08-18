@@ -1,174 +1,75 @@
-# Ovia Closet Private Commerce Demo
+## Product gallery strategy
 
-## Goal
+Most real Jewellgalleria products are supplied through only one screenshot or reel frame.
 
-Build an exceptionally polished interactive private commerce concept for the fashion brand Ovia Closet.
+Real product screenshots are still the authoritative source.
 
-This is a sales demo intended to impress a real prospective client.
+For REAL products:
 
-It is NOT a production ecommerce backend.
+Create richer PDP galleries by deriving multiple views from the supplied source image without inventing unseen jewellery design details.
 
-The experience must feel like real functioning software, not a slide deck or static mockup.
+Allowed transformations:
 
-## Sources of truth
+- clean crop
+- tighter crop
+- macro/detail crop
+- alternate framing
+- background cleanup
+- isolated product presentation
+- subtle canvas/recomposition
+- different aspect ratios
+- enlarged detail view
 
-1. `reference/catalogue/`
-   - Authoritative source for product names, prices, available sizes, colors and product imagery.
+Do NOT invent:
 
-2. `reference/logo/`
-   - Authoritative source for Ovia branding.
+- a different reverse side
+- clasp details not visible
+- additional stones
+- different chain design
+- different texture
+- different jewellery geometry
+- product dimensions
+- material details not supplied
 
-3. `reference/ovia-concepts/`
-   - Visual direction only.
-   - Do not reproduce UI mistakes from these references.
+The jewellery itself must remain faithful to the original source.
 
-4. `reference/aarini-reference/`
-   - Interaction and product-flow inspiration only.
-   - Do not copy Aarini branding, colors, products or ethnic-fashion aesthetic.
+A real product PDP may therefore contain multiple gallery images derived from one original source.
 
-## Product imagery
+Example:
 
-Use Ovia's actual catalogue photographs.
+gallery:
+1. original/full product view
+2. tight product crop
+3. macro/detail crop
+4. clean editorial product card
 
-Extract/crop product imagery from the supplied screenshots where necessary.
+These may all originate from the same supplied image.
 
-Do NOT generate replacement clothing images.
+## Fictional/demo products
 
-Do NOT alter the clothing design.
+It is acceptable to add fictional jewellery products when needed to make the store feel complete.
 
-Remove surrounding WhatsApp/browser UI from cropped product assets.
+Rules:
 
-## Design direction
+- keep fictional products visually consistent with the brand
+- do not copy another identifiable brand's products
+- clearly mark them in source data as demo products
+- do not claim Jewellgalleria actually sells them
+- business/admin demo may use them normally
+- storefront does not need a visible "fictional" badge because this is a private concept, but the source code/data must distinguish them
 
-Ovia should feel:
+Use something like:
 
-- feminine
-- modern
-- editorial
-- fashion-forward
-- affordable-premium
-- sophisticated
-- mobile-first
+isDemoProduct: true
 
-Avoid:
+Real Jewellgalleria products should use:
 
-- generic SaaS styling
-- excessive gradients
-- excessive glassmorphism
-- black-and-gold luxury aesthetic
-- ethnic/heritage Aarini styling
-- cartoonish UI
-- fake AI-generated fashion products
+isDemoProduct: false
 
-## Palette
+Prefer real products for:
+- hero
+- first product rows
+- featured collections
+- primary demo flow
 
-Primary: #A64F8C
-Logo mauve: #B878AC
-Deep plum: #673453
-Soft blush: #EFDAEC
-Ivory: #FFF9F5
-Text: #292327
-Muted: #756B70
-
-Maintain good contrast.
-
-## UX priority
-
-The customer experience is the most important part of the demo.
-
-Spend approximately:
-- 55% visual/interaction emphasis on storefront + PDP + cart
-- 25% on admin / inventory / orders
-- 20% on analytics
-
-## Interactions
-
-Every visible click must produce a real UI state change.
-
-Examples:
-
-Selecting size S:
-- S visibly becomes selected
-- previous selected size becomes unselected
-
-Add to Bag:
-- cart state updates
-- cart count updates
-- confirmation/bottom sheet appears
-- correct product, price and selected size are displayed
-
-Inventory:
-- clicking + actually increments the number
-- saving persists the change
-- inventory table updates
-
-Analytics:
-- changing period shows loading feedback
-- chart animates into the new state
-- numbers and relevant insights update
-
-Never move a fake cursor over controls without changing application state.
-
-## Responsiveness
-
-Primary design target:
-390px mobile viewport.
-
-Also fully support:
-- 768px tablet
-- 1280px desktop
-- 1440px desktop
-
-Never crop critical UI to fake motion.
-
-## Demo data
-
-Admin, orders, revenue and analytics numbers are simulated.
-
-Display a discreet:
-
-"DEMO MODE • Simulated business data"
-
-indicator in the business interface.
-
-Never imply demo analytics are real Ovia data.
-
-## Architecture
-
-Frontend-only demo.
-
-No database.
-No payment provider.
-No authentication backend.
-
-Use local demo data and localStorage.
-
-## Quality standard
-
-This must look client-ready.
-
-Before considering any page finished:
-- verify mobile
-- verify desktop
-- test interactions
-- check spacing
-- check overflow
-- check hover/focus states
-- check text accuracy
-- check product accuracy
-- check loading states
-- check empty/error state where relevant
-
-Do not proceed to the next major phase with obvious visual defects.
-
-## Workflow
-
-Before major implementation:
-1. inspect existing files
-2. inspect relevant reference images
-3. describe plan
-4. implement
-5. run tests/build
-6. visually inspect output
-7. fix issues
-8. summarize changes
+Use fictional products mainly to fill missing categories or create catalogue depth.

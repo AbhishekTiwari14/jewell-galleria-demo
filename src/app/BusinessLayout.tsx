@@ -16,7 +16,7 @@ import { classNames } from '../lib/classNames'
 import { useDemoStore } from '../store/demoStore'
 
 const businessLinks = [
-  { to: '/business', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/business', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/business/products', label: 'Products', icon: PackageOpen },
   { to: '/business/inventory', label: 'Inventory', icon: Boxes },
   { to: '/business/orders', label: 'Orders', icon: ClipboardList },
@@ -41,20 +41,21 @@ export function BusinessLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf8f7]">
+    <div className="business-shell min-h-screen bg-ovia-ivory">
       <header className="border-b border-ovia-line bg-white">
         <Container className="flex min-h-18 items-center justify-between gap-3 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <img
-              alt="Ovia"
-              className="size-10 shrink-0 rounded-xl object-cover sm:size-11"
+              alt="Jewellgalleria"
+              className="size-10 shrink-0 object-cover sm:size-11"
               height="44"
-              src="/brand/ovia-logo.jpg"
+              src="/brand/jewellgalleria-logo.png"
               width="44"
             />
             <div className="min-w-0">
               <p className="truncate font-display text-lg text-ovia-plum">
-                Ovia Business
+                <span className="sm:hidden">Business</span>
+                <span className="hidden sm:inline">Jewellgalleria Business</span>
               </p>
               <p className="hidden text-xs text-ovia-muted sm:block">
                 Private operations preview
@@ -64,15 +65,15 @@ export function BusinessLayout() {
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Link
               aria-label="Return to storefront"
-              className="inline-flex min-h-10 items-center gap-2 rounded-control px-2.5 text-sm font-semibold text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum sm:px-3"
+              className="inline-flex min-h-11 items-center gap-2 rounded-control px-2.5 text-sm font-semibold text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum sm:px-3"
               to="/"
             >
               <ArrowLeft aria-hidden="true" size={16} />
-              <span className="hidden sm:inline">Storefront</span>
+              <span className="text-xs sm:text-sm">Back to Store</span>
             </Link>
             <button
               aria-label="Reset all simulated business data"
-              className="inline-flex min-h-10 items-center gap-2 rounded-control px-2.5 text-sm font-semibold text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum sm:px-3"
+              className="inline-flex min-h-11 items-center gap-2 rounded-control px-2.5 text-sm font-semibold text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum sm:px-3"
               onClick={handleReset}
               type="button"
             >
@@ -89,7 +90,7 @@ export function BusinessLayout() {
               <NavLink
                 className={({ isActive }) =>
                   classNames(
-                    'inline-flex min-h-10 min-w-0 shrink-0 items-center justify-center gap-2 rounded-control px-1 text-[0.68rem] font-semibold transition-colors sm:px-3 sm:text-sm',
+                    'inline-flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-2 rounded-control px-1 text-[0.68rem] font-semibold transition-colors sm:px-3 sm:text-sm',
                     isActive
                       ? 'bg-ovia-blush text-ovia-plum'
                       : 'text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum',

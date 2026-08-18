@@ -21,10 +21,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const cart = useDemoStore((state) => state.cart)
   const createdProducts = useDemoStore((state) => state.createdProducts)
   const commerceProducts = [...sellableProducts, ...createdProducts]
-  const subtotal = cart.reduce((sum, line) => {
+  const subtotal = cart.reduce<number | null>((sum, line) => {
+    if (sum === null) return null
     const product = commerceProducts.find((item) => item.id === line.productId)
-    return sum + (product?.priceInPaise ?? 0) * line.quantity
+    if (product?.priceInPaise === null || product?.priceInPaise === undefined) {
+      return null
+    }
+    return sum + product.priceInPaise * line.quantity
   }, 0)
+  const canCheckout = subtotal !== null
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 640px)')
@@ -106,7 +111,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </span>
                 <h3 className="mt-5 font-display text-2xl">Your bag is waiting</h3>
                 <p className="mt-2 max-w-xs text-sm leading-6 text-ovia-muted">
-                  Explore the Ovia edit and choose a piece that feels like you.
+                  Browse the Jewellgalleria catalogue and add a piece when you are ready.
                 </p>
                 <Link
                   className="mt-6 inline-flex min-h-11 items-center rounded-control bg-ovia-primary px-5 text-sm font-semibold text-white hover:bg-ovia-plum"
@@ -130,15 +135,26 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       {formatInr(subtotal)}
                     </strong>
                   </div>
-                  <Link
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-ovia-primary px-5 text-sm font-bold text-white transition-colors hover:bg-ovia-plum"
-                    onClick={onClose}
-                    data-testid="drawer-checkout"
-                    to="/checkout"
-                  >
-                    Proceed to checkout
-                    <ArrowRight aria-hidden="true" size={17} />
-                  </Link>
+                  {canCheckout ? (
+                    <Link
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-ovia-primary px-5 text-sm font-bold text-white transition-colors hover:bg-ovia-plum"
+                      data-testid="drawer-checkout"
+                      onClick={onClose}
+                      to="/checkout"
+                    >
+                      Proceed to checkout
+                      <ArrowRight aria-hidden="true" size={17} />
+                    </Link>
+                  ) : (
+                    <button
+                      className="min-h-12 w-full cursor-not-allowed rounded-control bg-ovia-muted/30 px-5 text-sm font-bold text-white"
+                      data-testid="drawer-checkout"
+                      disabled
+                      type="button"
+                    >
+                      Price required to checkout
+                    </button>
+                  )}
                   <Link
                     className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-control text-sm font-semibold text-ovia-plum hover:bg-ovia-blush/40"
                     onClick={onClose}

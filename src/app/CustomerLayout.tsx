@@ -1,9 +1,8 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowRight, Menu, Search, ShoppingBag } from 'lucide-react'
+import { ArrowRight, BriefcaseBusiness, Menu, Search, ShoppingBag } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-import { BusinessDiscoveryPill } from '../components/customer/BusinessDiscoveryPill'
 import { CartDrawer } from '../components/customer/CartDrawer'
 import { CustomerSearchSheet } from '../components/customer/CustomerSearchSheet'
 import { MobileNavigationDrawer } from '../components/customer/MobileNavigationDrawer'
@@ -73,11 +72,7 @@ export function CustomerLayout() {
   const integratedHeader = isHome && !isScrolled
 
   return (
-    <div className="min-h-screen">
-      <div className="relative z-50 bg-ovia-plum px-3 py-1.5 text-center text-[0.61rem] font-semibold tracking-[0.08em] text-white uppercase sm:text-[0.68rem]">
-        <span className="sm:hidden">Private Ovia concept · Current catalogue</span>
-        <span className="hidden sm:inline">Private Ovia edit · Browse the current catalogue</span>
-      </div>
+    <div className="customer-shell min-h-screen">
       <header
         className={classNames(
           'sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-300',
@@ -87,36 +82,41 @@ export function CustomerLayout() {
         )}
         data-header-state={integratedHeader ? 'integrated' : 'solid'}
       >
-        <Container className="relative flex min-h-17 items-center justify-between lg:hidden">
-          <button aria-label="Open navigation" className="flex size-12 items-center justify-center rounded-full text-ovia-plum transition-colors hover:bg-ovia-blush/50" data-testid="mobile-menu-trigger" onClick={() => setIsMenuOpen(true)} type="button">
+        <Container className="relative flex min-h-16 items-center justify-between lg:hidden">
+          <button aria-label="Open navigation" className="flex size-11 items-center justify-center rounded-full text-ovia-plum transition-colors hover:bg-ovia-blush/50" data-testid="mobile-menu-trigger" onClick={() => setIsMenuOpen(true)} type="button">
             <Menu aria-hidden="true" size={22} />
           </button>
-          <Link aria-label="Ovia Closet home" className="absolute left-1/2 -translate-x-1/2" to="/">
-            <img alt="Ovia" className="size-11 object-cover" height="44" src="/brand/ovia-logo.jpg" width="44" />
+          <Link aria-label="Jewellgalleria home" className="absolute left-1/2 -translate-x-1/2" to="/">
+            <img alt="Jewellgalleria" className="size-11 object-cover" height="44" src="/brand/jewellgalleria-logo.png" width="44" />
           </Link>
           <div className="flex items-center">
-            <button aria-label="Search Ovia products" className="flex size-12 items-center justify-center rounded-full text-ovia-plum transition-colors hover:bg-ovia-blush/50" data-testid="mobile-search-trigger" onClick={() => setIsSearchOpen(true)} type="button">
+            <button aria-label="Search Jewellgalleria products" className="flex size-11 items-center justify-center rounded-full text-ovia-plum transition-colors hover:bg-ovia-blush/50" data-testid="mobile-search-trigger" onClick={() => setIsSearchOpen(true)} type="button">
               <Search aria-hidden="true" size={20} />
             </button>
             <BagButton cartCount={cartCount} dataTestId="header-bag-button" onOpen={() => setIsCartOpen(true)} reducedMotion={prefersReducedMotion} />
           </div>
         </Container>
 
-        <Container className="hidden min-h-18 items-center justify-between gap-5 lg:flex">
-          <Link aria-label="Ovia Closet home" to="/"><img alt="Ovia" className="size-12 object-cover" height="48" src="/brand/ovia-logo.jpg" width="48" /></Link>
+        <Container className="hidden min-h-20 items-center justify-between gap-5 lg:flex">
+          <Link aria-label="Jewellgalleria home" className="flex items-center gap-3" to="/"><img alt="" className="size-13 object-cover" height="52" src="/brand/jewellgalleria-logo.png" width="52" /><span className="font-display text-[1.45rem] tracking-[0.02em] text-ovia-plum">Jewellgalleria</span></Link>
           <nav aria-label="Primary" className="flex items-center gap-7 xl:gap-9">
-            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#new-arrivals">New Arrivals</a>
-            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#dresses">Dresses</a>
-            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#tops">Tops</a>
-            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#kurtis">Kurtis</a>
-            <Link className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-ovia-primary/18 bg-ovia-blush/48 px-3.5 text-ovia-plum transition-colors hover:bg-ovia-blush/72" data-testid="desktop-business-preview" to="/business">
-              <span className="text-[0.53rem] font-bold tracking-[0.14em] text-ovia-primary uppercase">For Ovia team</span>
+            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#featured">Featured</a>
+            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#necklaces">Necklaces</a>
+            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#earrings">Earrings</a>
+            <a className="text-[0.72rem] font-semibold tracking-[0.09em] text-ovia-muted uppercase transition-colors hover:text-ovia-primary" href="/#bracelets">Bracelets</a>
+            <Link
+              aria-label="Explore the Jewellgalleria Business Preview"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-control border border-ovia-plum bg-ovia-plum px-4 text-white shadow-[0_6px_16px_rgb(71_34_44/0.14)] transition-colors hover:bg-ovia-primary"
+              data-testid="desktop-business-preview"
+              to="/business"
+            >
+              <BriefcaseBusiness aria-hidden="true" size={15} />
               <span className="text-[0.68rem] font-bold whitespace-nowrap">Business Preview</span>
               <ArrowRight aria-hidden="true" className="transition-transform group-hover:translate-x-0.5" size={14} />
             </Link>
           </nav>
           <div className="flex items-center gap-1">
-            <button aria-label="Search Ovia products" className="flex size-11 items-center justify-center rounded-full text-ovia-plum hover:bg-ovia-blush/50" onClick={() => setIsSearchOpen(true)} type="button"><Search aria-hidden="true" size={18} /></button>
+            <button aria-label="Search Jewellgalleria products" className="flex size-11 items-center justify-center rounded-full text-ovia-plum hover:bg-ovia-blush/50" onClick={() => setIsSearchOpen(true)} type="button"><Search aria-hidden="true" size={18} /></button>
             <BagButton cartCount={cartCount} dataTestId="desktop-header-bag-button" onOpen={() => setIsCartOpen(true)} reducedMotion={prefersReducedMotion} />
           </div>
         </Container>
@@ -130,7 +130,6 @@ export function CustomerLayout() {
       <MobileNavigationDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <CustomerSearchSheet isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      {isHome && <BusinessDiscoveryPill />}
     </div>
   )
 }

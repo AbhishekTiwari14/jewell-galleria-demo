@@ -1,4 +1,6 @@
-export function formatInr(priceInPaise: number) {
+export function formatInr(priceInPaise: number | null) {
+  if (priceInPaise === null) return 'Price unavailable'
+
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',

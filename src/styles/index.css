@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ovia-primary: #a64f8c;
-  --color-ovia-logo: #b878ac;
-  --color-ovia-plum: #673453;
-  --color-ovia-blush: #efdaec;
-  --color-ovia-ivory: #fff9f5;
-  --color-ovia-ink: #292327;
-  --color-ovia-muted: #756b70;
-  --color-ovia-line: #e9dfe4;
+  --color-ovia-primary: #7f1732;
+  --color-ovia-logo: #bea579;
+  --color-ovia-plum: #4b0b1e;
+  --color-ovia-blush: #eadbd0;
+  --color-ovia-ivory: #fbf7f0;
+  --color-ovia-ink: #2d2321;
+  --color-ovia-muted: #746761;
+  --color-ovia-line: #e4d8cf;
   --color-ovia-success: #2f7152;
   --color-ovia-warning: #9a5b16;
   --color-ovia-danger: #a33f4b;
@@ -50,8 +50,62 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top right, rgb(239 218 236 / 0.34), transparent 28rem),
+    radial-gradient(circle at top right, rgb(127 23 50 / 0.035), transparent 28rem),
     var(--color-ovia-ivory);
+}
+
+.customer-shell {
+  --color-ovia-primary: #7f1732;
+  --color-ovia-logo: #bea579;
+  --color-ovia-plum: #4b0b1e;
+  --color-ovia-blush: #eadbd0;
+  --color-ovia-ivory: #fbf7f0;
+  --color-ovia-ink: #2d2321;
+  --color-ovia-muted: #746761;
+  --color-ovia-line: #e4d8cf;
+  --radius-control: 0.5rem;
+  --radius-card: 1rem;
+  --radius-sheet: 1.25rem;
+  --shadow-card: 0 14px 38px rgb(75 11 30 / 0.07);
+  --shadow-floating: 0 24px 60px rgb(45 35 33 / 0.15);
+  color: var(--color-ovia-ink);
+  background: var(--color-ovia-ivory);
+}
+
+.customer-shell :focus-visible {
+  outline-color: rgb(127 23 50 / 0.38);
+}
+
+.customer-shell ::selection {
+  color: var(--color-ovia-ivory);
+  background: var(--color-ovia-primary);
+}
+
+.business-shell {
+  --color-ovia-primary: #7f1732;
+  --color-ovia-logo: #ad9270;
+  --color-ovia-plum: #47222c;
+  --color-ovia-blush: #f0e5e2;
+  --color-ovia-ivory: #f8f5f2;
+  --color-ovia-ink: #292729;
+  --color-ovia-muted: #716b6d;
+  --color-ovia-line: #e3ddda;
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-sheet: 1rem;
+  --shadow-card: 0 8px 24px rgb(52 38 42 / 0.055);
+  --shadow-floating: 0 24px 58px rgb(37 30 32 / 0.16);
+  color: var(--color-ovia-ink);
+  background: var(--color-ovia-ivory);
+}
+
+.business-shell :focus-visible {
+  outline-color: rgb(127 23 50 / 0.4);
+}
+
+.business-shell ::selection {
+  color: white;
+  background: var(--color-ovia-primary);
 }
 
 @layer components {
@@ -117,7 +171,7 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid rgb(166 79 140 / 0.38);
+  outline: 3px solid rgb(127 23 50 / 0.38);
   outline-offset: 3px;
 }
 

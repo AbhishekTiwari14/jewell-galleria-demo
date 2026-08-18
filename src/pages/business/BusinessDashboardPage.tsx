@@ -39,21 +39,21 @@ export function BusinessDashboardPage() {
 
   const metricCards = [
     {
-      label: 'Orders',
-      value: metrics.orders.toString(),
-      context: 'Across this demo period',
-      icon: ShoppingBag,
-    },
-    {
       label: 'Revenue',
       value: formatInr(metrics.revenue),
-      context: 'Excludes cancelled orders',
+      context: 'Simulated, excluding cancelled',
       icon: IndianRupee,
+    },
+    {
+      label: 'Orders',
+      value: metrics.orders.toString(),
+      context: 'Simulated order records',
+      icon: ShoppingBag,
     },
     {
       label: 'Average order value',
       value: formatInr(metrics.averageOrderValue),
-      context: 'From non-cancelled orders',
+      context: 'Simulated non-cancelled orders',
       icon: PackageCheck,
     },
     {
@@ -62,21 +62,27 @@ export function BusinessDashboardPage() {
       context: `${metrics.inventoryUnits} simulated units`,
       icon: Boxes,
     },
+    {
+      label: 'Low stock',
+      value: metrics.lowStockVariants.length.toString(),
+      context: 'Variants at 8 units or fewer',
+      icon: AlertTriangle,
+    },
   ]
 
   return (
     <Container className="py-7 sm:py-10">
       <BusinessPageHeader
-        description="A concise view of the storefront, fulfilment queue, and stock requiring attention."
-        eyebrow="Overview"
-        title="Good morning, Ovia"
+        description="A simulated view of the storefront, fulfilment queue, and stock requiring attention. All figures are demo data."
+        eyebrow="Dashboard"
+        title="Good morning, Jewellgalleria"
       />
 
-      <section aria-label="Business metrics" className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Business metrics" className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-5">
         {metricCards.map(({ label, value, context, icon: Icon }, index) => (
           <motion.article
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-card border border-ovia-line bg-white p-5 shadow-card"
+            className="rounded-card border border-ovia-line bg-white p-4 shadow-card last:col-span-2 sm:p-5 xl:last:col-span-1"
             initial={{ opacity: 0, y: 8 }}
             key={label}
             transition={{ delay: index * 0.05, duration: 0.35 }}
@@ -87,7 +93,7 @@ export function BusinessDashboardPage() {
                 <Icon aria-hidden="true" size={17} />
               </span>
             </div>
-            <p className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-ovia-ink">{value}</p>
+            <p className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-ovia-ink sm:text-3xl">{value}</p>
             <p className="mt-1 text-xs text-ovia-muted">{context}</p>
           </motion.article>
         ))}
@@ -126,7 +132,7 @@ export function BusinessDashboardPage() {
           <article className="rounded-card border border-ovia-line bg-ovia-plum p-5 text-white shadow-card sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold tracking-[0.12em] text-ovia-blush uppercase">Stock watch</p>
+                <p className="text-xs font-bold tracking-[0.12em] text-ovia-blush uppercase">Low stock alerts</p>
                 <p className="mt-3 text-4xl font-semibold" data-testid="low-stock-count">
                   {metrics.lowStockVariants.length}
                 </p>
@@ -137,14 +143,14 @@ export function BusinessDashboardPage() {
               </span>
             </div>
             <div className="mt-5 space-y-2">
-              {metrics.lowStockVariants.slice(0, 3).map(({ product, size, color, quantity }) => (
-                <div className="flex items-center justify-between gap-3 text-sm" key={`${product.id}-${color ?? 'default'}-${size}`}>
-                  <span className="truncate text-white/80">{product.catalogueName} · {color ? `${color} / ` : ''}{size}</span>
+              {metrics.lowStockVariants.slice(0, 3).map(({ product, label, selection, quantity }) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={`${product.id}-${JSON.stringify(selection)}`}>
+                  <span className="truncate text-white/80">{product.catalogueName} · {label}</span>
                   <span className="font-bold">{quantity}</span>
                 </div>
               ))}
             </div>
-            <Link className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-control bg-white px-4 text-sm font-bold text-ovia-plum hover:bg-ovia-ivory" to="/business/inventory">
+            <Link className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-control bg-white px-4 text-sm font-bold text-ovia-plum hover:bg-ovia-ivory" to="/business/inventory">
               Manage inventory <ArrowUpRight aria-hidden="true" size={15} />
             </Link>
           </article>
@@ -161,12 +167,12 @@ export function BusinessDashboardPage() {
               {topProducts.map(({ product, units }, index) => (
                 <div className="flex items-center gap-3" key={product.id}>
                   <span className="w-4 text-xs font-bold text-ovia-muted">{index + 1}</span>
-                  <img alt="" className="size-12 rounded-xl bg-ovia-ivory object-cover object-top" src={product.image} />
+                  <img alt="" className="size-12 rounded-xl bg-ovia-ivory object-cover object-top" src={product.images[0]} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-ovia-ink">{product.catalogueName}</p>
                     <p className="text-xs text-ovia-muted">{formatInr(product.priceInPaise)}</p>
                   </div>
-                  <span className="text-sm font-bold text-ovia-plum">{units} sold</span>
+                  <span className="text-right text-xs font-bold text-ovia-plum sm:text-sm">{units} demo units</span>
                 </div>
               ))}
             </div>

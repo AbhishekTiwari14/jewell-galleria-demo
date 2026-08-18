@@ -2,35 +2,39 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { sellableProducts } from '../data/products'
-import type {
-  DemoProduct,
-  DemoProductStatus,
-  ProductCategory,
-  ProductColor,
-  ProductSize,
+import {
+  getProductSelections,
+  type DemoProduct,
+  type DemoProductStatus,
+  type ProductAttribute,
+  type ProductCategory,
+  type CommerceProduct,
+  type ProductImageGallery,
+  type ProductSelection,
+  type ProductVariantOption,
 } from '../data/productTypes'
 
 export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly'
 export type DemoOrderStatus =
+  | 'new'
   | 'confirmed'
-  | 'processing'
+  | 'packed'
   | 'shipped'
   | 'delivered'
   | 'cancelled'
-export type DemoPaymentStatus = 'paid' | 'cod'
+export type DemoPaymentStatus = 'paid' | 'cod' | 'demo'
 
 export interface CartLine {
   id: string
   productId: string
   quantity: number
-  size: ProductSize
-  color?: string
+  selection: ProductSelection
 }
 
 export interface DemoOrderLine {
   productId: string
   quantity: number
-  size: ProductSize
+  selection: ProductSelection
 }
 
 export interface DemoOrder {
@@ -41,7 +45,7 @@ export interface DemoOrder {
   paymentStatus: DemoPaymentStatus
   status: DemoOrderStatus
   items: DemoOrderLine[]
-  amountInPaise: number
+  amountInPaise: number | null
 }
 
 export interface DemoData {
@@ -57,15 +61,15 @@ interface DemoActions {
   addToCart: (line: Omit<CartLine, 'id'>) => string
   createProduct: (input: CreateDemoProductInput) => DemoProduct
   clearCart: () => void
+  placeDemoOrder: (input: PlaceDemoOrderInput) => DemoOrder
   removeFromCart: (lineId: string) => void
   resetDemo: () => void
   setAnalyticsPeriod: (period: AnalyticsPeriod) => void
   setCartQuantity: (lineId: string, quantity: number) => void
   setVariantInventory: (
     productId: string,
-    size: ProductSize,
+    selection: ProductSelection,
     quantity: number,
-    color?: string,
   ) => void
   toggleWishlist: (productId: string) => void
   updateOrderStatus: (orderId: string, status: DemoOrderStatus) => void
@@ -77,8 +81,7 @@ export type DemoStore = DemoData & DemoActions
 export const LOW_STOCK_THRESHOLD = 8
 
 export interface ProductVariantStock {
-  color: string
-  size: ProductSize
+  selection: ProductSelection
   quantity: number
 }
 
@@ -87,31 +90,45 @@ export interface CreateDemoProductInput {
   category: ProductCategory
   priceInPaise: number
   description: string
-  image: string
-  colors: ProductColor[]
-  sizes: ProductSize[]
+  images: string[]
+  attributes: ProductAttribute[]
+  variantOptions: ProductVariantOption[]
   publicationStatus: DemoProductStatus
   variants: ProductVariantStock[]
 }
 
-export type UpdateDemoProductInput = Omit<CreateDemoProductInput, 'variants'> & {
-  variants: ProductVariantStock[]
+export interface PlaceDemoOrderInput {
+  customerName: string
+  shippingCity: string
+}
+
+export type UpdateDemoProductInput = CreateDemoProductInput
+
+function canonicalSelection(selection: ProductSelection) {
+  return Object.entries(selection)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(
+      ([optionId, value]) =>
+        `${encodeURIComponent(optionId)}=${encodeURIComponent(value)}`,
+    )
+    .join('&')
 }
 
 export function getVariantKey(
   productId: string,
-  size: ProductSize,
-  color?: string,
+  selection: ProductSelection = {},
 ) {
-  return color ? `${productId}:${color}:${size}` : `${productId}:${size}`
+  return `${productId}:${canonicalSelection(selection) || 'base'}`
 }
 
 function slugifyProductName(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '') || 'demo-product'
+  return (
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'demo-product'
+  )
 }
 
 function uniqueProductSlug(name: string, products: DemoProduct[]) {
@@ -128,150 +145,151 @@ function uniqueProductSlug(name: string, products: DemoProduct[]) {
 }
 
 function getCartLineId(line: Omit<CartLine, 'id'>) {
-  return [line.productId, line.size, line.color ?? 'default'].join(':')
+  return getVariantKey(line.productId, line.selection)
 }
 
 function createInitialInventory() {
-  const quantities: Record<string, number> = {
-    [getVariantKey('ovia-001', 'S')]: 15,
-    [getVariantKey('ovia-001', 'M')]: 12,
-    [getVariantKey('ovia-001', 'L')]: 10,
-    [getVariantKey('ovia-002', 'S')]: 14,
-    [getVariantKey('ovia-002', 'M')]: 12,
-    [getVariantKey('ovia-002', 'L')]: 9,
-    [getVariantKey('ovia-002', 'XL')]: 11,
-    [getVariantKey('ovia-002', 'XXL')]: 7,
-    [getVariantKey('ovia-003', 'M')]: 13,
-    [getVariantKey('ovia-003', 'L')]: 10,
-    [getVariantKey('ovia-003', 'XL')]: 9,
-    [getVariantKey('ovia-003', 'XXL')]: 6,
-    [getVariantKey('ovia-004', 'Free size')]: 5,
-    [getVariantKey('ovia-005', 'S')]: 9,
-    [getVariantKey('ovia-005', 'M')]: 7,
-    [getVariantKey('ovia-006', 'S')]: 8,
-    [getVariantKey('ovia-006', 'M')]: 4,
-    [getVariantKey('ovia-007', 'S')]: 10,
-    [getVariantKey('ovia-008', 'S')]: 11,
-    [getVariantKey('ovia-009', 'S')]: 6,
-    [getVariantKey('ovia-010', 'S')]: 12,
-  }
+  const quantities: Record<string, number> = {}
 
-  for (const product of sellableProducts) {
-    for (const size of product.sizes) {
-      const key = getVariantKey(product.id, size)
-      quantities[key] ??= 10
-    }
-  }
+  sellableProducts.forEach((product, productIndex) => {
+    getProductSelections(product).forEach((selection, selectionIndex) => {
+      quantities[getVariantKey(product.id, selection)] =
+        7 + ((productIndex * 3 + selectionIndex * 2) % 9)
+    })
+  })
 
   return quantities
 }
 
-function getOrderAmount(items: DemoOrderLine[]) {
-  return items.reduce((total, item) => {
-    const product = sellableProducts.find(
+function getOrderAmount(
+  items: DemoOrderLine[],
+  commerceProducts: readonly CommerceProduct[] = sellableProducts,
+) {
+  return items.reduce<number | null>((total, item) => {
+    if (total === null) return null
+    const product = commerceProducts.find(
       (candidate) => candidate.id === item.productId,
     )
-    return total + (product?.priceInPaise ?? 0) * item.quantity
+    if (product?.priceInPaise === null || product?.priceInPaise === undefined) {
+      return null
+    }
+    return total + product.priceInPaise * item.quantity
   }, 0)
 }
 
-function createOrder(
-  order: Omit<DemoOrder, 'amountInPaise'>,
-): DemoOrder {
+function createDemoOrderId(orders: DemoOrder[], createdAt: Date) {
+  const date = [
+    createdAt.getFullYear().toString().slice(-2),
+    String(createdAt.getMonth() + 1).padStart(2, '0'),
+    String(createdAt.getDate()).padStart(2, '0'),
+  ].join('')
+  const prefix = `JGD-D${date}-`
+  const sequence =
+    orders.filter((order) => order.id.startsWith(prefix)).length + 1
+  return `${prefix}${String(sequence).padStart(3, '0')}`
+}
+
+function createOrder(order: Omit<DemoOrder, 'amountInPaise'>): DemoOrder {
   return { ...order, amountInPaise: getOrderAmount(order.items) }
 }
 
 function createInitialOrders(): DemoOrder[] {
   return [
     createOrder({
-      id: 'OVD-260813-018',
+      id: 'JGD-260817-018',
       customerName: 'Neha Kapoor',
-      createdAt: '2026-08-13T08:35:00+05:30',
+      createdAt: '2026-08-17T08:35:00+05:30',
       shippingCity: 'Mumbai',
       paymentStatus: 'paid',
       status: 'confirmed',
-      items: [{ productId: 'ovia-006', size: 'S', quantity: 1 }],
+      items: [{ productId: 'jg-real-010', selection: {}, quantity: 1 }],
     }),
     createOrder({
-      id: 'OVD-260813-017',
+      id: 'JGD-260817-017',
       customerName: 'Isha Mehta',
-      createdAt: '2026-08-13T07:52:00+05:30',
+      createdAt: '2026-08-17T07:52:00+05:30',
       shippingCity: 'Pune',
       paymentStatus: 'cod',
-      status: 'processing',
+      status: 'packed',
       items: [
-        { productId: 'ovia-002', size: 'M', quantity: 1 },
-        { productId: 'ovia-007', size: 'S', quantity: 1 },
+        { productId: 'jg-real-009', selection: {}, quantity: 1 },
+        { productId: 'jg-real-001', selection: {}, quantity: 1 },
       ],
     }),
     createOrder({
-      id: 'OVD-260812-016',
+      id: 'JGD-260816-016',
       customerName: 'Rhea Nair',
-      createdAt: '2026-08-12T18:20:00+05:30',
+      createdAt: '2026-08-16T18:20:00+05:30',
       shippingCity: 'Bengaluru',
       paymentStatus: 'paid',
       status: 'shipped',
-      items: [{ productId: 'ovia-005', size: 'S', quantity: 1 }],
+      items: [{ productId: 'jg-real-013', selection: {}, quantity: 1 }],
     }),
     createOrder({
-      id: 'OVD-260812-015',
+      id: 'JGD-260816-015',
       customerName: 'Tara Shah',
-      createdAt: '2026-08-12T16:08:00+05:30',
+      createdAt: '2026-08-16T16:08:00+05:30',
       shippingCity: 'Ahmedabad',
       paymentStatus: 'paid',
       status: 'delivered',
       items: [
-        { productId: 'ovia-001', size: 'S', quantity: 1 },
-        { productId: 'ovia-010', size: 'S', quantity: 1 },
+        { productId: 'jg-real-005', selection: {}, quantity: 1 },
+        { productId: 'jg-real-008', selection: {}, quantity: 1 },
       ],
     }),
     createOrder({
-      id: 'OVD-260812-014',
+      id: 'JGD-260815-014',
       customerName: 'Maya Joshi',
-      createdAt: '2026-08-12T13:45:00+05:30',
+      createdAt: '2026-08-15T13:45:00+05:30',
       shippingCity: 'Delhi',
       paymentStatus: 'cod',
-      status: 'processing',
-      items: [{ productId: 'ovia-003', size: 'M', quantity: 2 }],
+      status: 'packed',
+      items: [{ productId: 'jg-real-006', selection: {}, quantity: 2 }],
     }),
     createOrder({
-      id: 'OVD-260811-013',
+      id: 'JGD-260815-013',
       customerName: 'Sara Dsouza',
-      createdAt: '2026-08-11T17:12:00+05:30',
+      createdAt: '2026-08-15T11:12:00+05:30',
       shippingCity: 'Goa',
       paymentStatus: 'paid',
       status: 'delivered',
-      items: [{ productId: 'ovia-006', size: 'M', quantity: 1 }],
+      items: [{ productId: 'jg-real-015', selection: {}, quantity: 1 }],
     }),
     createOrder({
-      id: 'OVD-260811-012',
+      id: 'JGD-260814-012',
       customerName: 'Avni Rao',
-      createdAt: '2026-08-11T11:30:00+05:30',
+      createdAt: '2026-08-14T11:30:00+05:30',
       shippingCity: 'Hyderabad',
       paymentStatus: 'paid',
       status: 'shipped',
       items: [
-        { productId: 'ovia-004', size: 'Free size', quantity: 1 },
-        { productId: 'ovia-008', size: 'S', quantity: 1 },
+        { productId: 'jg-real-004', selection: {}, quantity: 1 },
+        { productId: 'jg-real-011', selection: {}, quantity: 1 },
       ],
     }),
     createOrder({
-      id: 'OVD-260810-011',
+      id: 'JGD-260814-011',
       customerName: 'Kiara Singh',
-      createdAt: '2026-08-10T15:05:00+05:30',
+      createdAt: '2026-08-14T10:05:00+05:30',
       shippingCity: 'Chandigarh',
       paymentStatus: 'paid',
       status: 'delivered',
-      items: [{ productId: 'ovia-009', size: 'S', quantity: 1 }],
+      items: [
+        {
+          productId: 'jg-demo-001',
+          selection: { 'ring-size': '7' },
+          quantity: 1,
+        },
+      ],
     }),
     createOrder({
-      id: 'OVD-260810-010',
+      id: 'JGD-260813-010',
       customerName: 'Diya Menon',
-      createdAt: '2026-08-10T10:18:00+05:30',
+      createdAt: '2026-08-13T10:18:00+05:30',
       shippingCity: 'Kochi',
       paymentStatus: 'cod',
       status: 'cancelled',
-      items: [{ productId: 'ovia-002', size: 'XL', quantity: 1 }],
+      items: [{ productId: 'jg-real-009', selection: {}, quantity: 1 }],
     }),
   ]
 }
@@ -293,7 +311,11 @@ function migratePersistedData(
 ): DemoData {
   const defaults = createInitialDemoData()
 
-  if (!persistedState || typeof persistedState !== 'object') {
+  if (
+    (persistedVersion !== 2 && persistedVersion !== 3) ||
+    !persistedState ||
+    typeof persistedState !== 'object'
+  ) {
     return defaults
   }
 
@@ -301,18 +323,16 @@ function migratePersistedData(
   return {
     ...defaults,
     cart: Array.isArray(previous.cart) ? previous.cart : defaults.cart,
-    createdProducts:
-      persistedVersion >= 4 && Array.isArray(previous.createdProducts)
-        ? previous.createdProducts
-        : defaults.createdProducts,
+    createdProducts: Array.isArray(previous.createdProducts)
+      ? previous.createdProducts
+      : defaults.createdProducts,
     wishlistProductIds: Array.isArray(previous.wishlistProductIds)
       ? previous.wishlistProductIds
       : defaults.wishlistProductIds,
     analyticsPeriod:
-      persistedVersion >= 3 &&
-      (previous.analyticsPeriod === 'daily' ||
-        previous.analyticsPeriod === 'monthly' ||
-        previous.analyticsPeriod === 'weekly')
+      previous.analyticsPeriod === 'daily' ||
+      previous.analyticsPeriod === 'weekly' ||
+      previous.analyticsPeriod === 'monthly'
         ? previous.analyticsPeriod
         : defaults.analyticsPeriod,
     inventoryByVariant:
@@ -320,17 +340,24 @@ function migratePersistedData(
       typeof previous.inventoryByVariant === 'object'
         ? previous.inventoryByVariant
         : defaults.inventoryByVariant,
-    orders:
-      Array.isArray(previous.orders) &&
-      previous.orders.every(
-        (order) =>
-          order &&
-          typeof order === 'object' &&
-          Array.isArray((order as DemoOrder).items),
-      )
-        ? previous.orders
-        : defaults.orders,
+    orders: Array.isArray(previous.orders)
+      ? previous.orders.map((order) => {
+          const previousStatus = (order as unknown as { status: string }).status
+          return {
+            ...order,
+            status: previousStatus === 'processing' ? 'packed' : previousStatus,
+          } as DemoOrder
+        })
+      : defaults.orders,
   }
+}
+
+function asGallery(images: string[]): ProductImageGallery {
+  const filtered = images.filter(Boolean)
+  if (filtered.length === 0) {
+    throw new Error('A demo product requires at least one image.')
+  }
+  return filtered as [string, ...string[]]
 }
 
 export const useDemoStore = create<DemoStore>()(
@@ -342,7 +369,6 @@ export const useDemoStore = create<DemoStore>()(
 
         set((state) => {
           const existingLine = state.cart.find((item) => item.id === id)
-
           return {
             cart: existingLine
               ? state.cart.map((item) =>
@@ -361,17 +387,24 @@ export const useDemoStore = create<DemoStore>()(
 
         set((state) => {
           const now = new Date().toISOString()
-          const id = `ovia-demo-${Date.now().toString(36)}`
+          const id = `jg-created-${Date.now().toString(36)}`
+          const catalogueName = input.catalogueName.trim()
+          const priceInPaise = Math.max(0, Math.trunc(input.priceInPaise))
           createdProduct = {
             id,
-            slug: uniqueProductSlug(input.catalogueName, state.createdProducts),
-            catalogueName: input.catalogueName.trim(),
+            slug: uniqueProductSlug(catalogueName, state.createdProducts),
+            name: catalogueName,
+            catalogueName,
+            nameProvenance: 'generated-demo',
             category: input.category,
-            priceInPaise: Math.max(0, Math.trunc(input.priceInPaise)),
+            price: priceInPaise / 100,
+            priceInPaise,
+            priceStatus: 'demo',
             description: input.description.trim(),
-            image: input.image,
-            colors: input.colors,
-            sizes: input.sizes,
+            images: asGallery(input.images),
+            isDemoProduct: true,
+            attributes: input.attributes,
+            variantOptions: input.variantOptions,
             publicationStatus: input.publicationStatus,
             status: 'demo-created',
             createdAt: now,
@@ -380,7 +413,7 @@ export const useDemoStore = create<DemoStore>()(
 
           const variantInventory = Object.fromEntries(
             input.variants.map((variant) => [
-              getVariantKey(id, variant.size, variant.color),
+              getVariantKey(id, variant.selection),
               Math.max(0, Math.trunc(variant.quantity)),
             ]),
           )
@@ -397,6 +430,42 @@ export const useDemoStore = create<DemoStore>()(
         return createdProduct
       },
       clearCart: () => set({ cart: [] }),
+      placeDemoOrder: (input) => {
+        let placedOrder!: DemoOrder
+
+        set((state) => {
+          if (state.cart.length === 0) {
+            throw new Error('A demo order requires at least one cart item.')
+          }
+
+          const createdAt = new Date()
+          const items = state.cart.map(({ productId, quantity, selection }) => ({
+            productId,
+            quantity,
+            selection,
+          }))
+          placedOrder = {
+            id: createDemoOrderId(state.orders, createdAt),
+            customerName: input.customerName.trim(),
+            createdAt: createdAt.toISOString(),
+            shippingCity: input.shippingCity.trim(),
+            paymentStatus: 'demo',
+            status: 'new',
+            items,
+            amountInPaise: getOrderAmount(items, [
+              ...sellableProducts,
+              ...state.createdProducts,
+            ]),
+          }
+
+          return {
+            cart: [],
+            orders: [placedOrder, ...state.orders],
+          }
+        })
+
+        return placedOrder
+      },
       removeFromCart: (lineId) =>
         set((state) => ({
           cart: state.cart.filter((line) => line.id !== lineId),
@@ -414,11 +483,11 @@ export const useDemoStore = create<DemoStore>()(
                     : line,
                 ),
         })),
-      setVariantInventory: (productId, size, quantity, color) =>
+      setVariantInventory: (productId, selection, quantity) =>
         set((state) => ({
           inventoryByVariant: {
             ...state.inventoryByVariant,
-            [getVariantKey(productId, size, color)]: Math.max(
+            [getVariantKey(productId, selection)]: Math.max(
               0,
               Math.trunc(quantity),
             ),
@@ -445,7 +514,7 @@ export const useDemoStore = create<DemoStore>()(
           )
           const variantInventory = Object.fromEntries(
             input.variants.map((variant) => [
-              getVariantKey(productId, variant.size, variant.color),
+              getVariantKey(productId, variant.selection),
               Math.max(0, Math.trunc(variant.quantity)),
             ]),
           )
@@ -455,13 +524,19 @@ export const useDemoStore = create<DemoStore>()(
               product.id === productId
                 ? {
                     ...product,
+                    name: input.catalogueName.trim(),
                     catalogueName: input.catalogueName.trim(),
                     category: input.category,
-                    priceInPaise: Math.max(0, Math.trunc(input.priceInPaise)),
+                    price:
+                      Math.max(0, Math.trunc(input.priceInPaise)) / 100,
+                    priceInPaise: Math.max(
+                      0,
+                      Math.trunc(input.priceInPaise),
+                    ),
                     description: input.description.trim(),
-                    image: input.image,
-                    colors: input.colors,
-                    sizes: input.sizes,
+                    images: asGallery(input.images),
+                    attributes: input.attributes,
+                    variantOptions: input.variantOptions,
                     publicationStatus: input.publicationStatus,
                     updatedAt: new Date().toISOString(),
                   }
@@ -475,9 +550,9 @@ export const useDemoStore = create<DemoStore>()(
         }),
     }),
     {
-      name: 'ovia-demo:v1',
+      name: 'jewellgalleria-demo:v1',
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 3,
       migrate: (persistedState, persistedVersion) =>
         migratePersistedData(persistedState, persistedVersion),
       partialize: ({

@@ -1,8 +1,9 @@
 import type { DemoOrderStatus } from '../store/demoStore'
 
 export const orderStatusLabels: Record<DemoOrderStatus, string> = {
+  new: 'New',
   confirmed: 'Confirmed',
-  processing: 'Processing',
+  packed: 'Packed',
   shipped: 'Shipped',
   delivered: 'Delivered',
   cancelled: 'Cancelled',

@@ -11,11 +11,16 @@ export function CartPage() {
   const cart = useDemoStore((state) => state.cart)
   const createdProducts = useDemoStore((state) => state.createdProducts)
   const commerceProducts = [...sellableProducts, ...createdProducts]
-  const subtotal = cart.reduce((sum, line) => {
+  const subtotal = cart.reduce<number | null>((sum, line) => {
+    if (sum === null) return null
     const product = commerceProducts.find((item) => item.id === line.productId)
-    return sum + (product?.priceInPaise ?? 0) * line.quantity
+    if (product?.priceInPaise === null || product?.priceInPaise === undefined) {
+      return null
+    }
+    return sum + product.priceInPaise * line.quantity
   }, 0)
   const cartCount = cart.reduce((count, line) => count + line.quantity, 0)
+  const canCheckout = subtotal !== null
 
   if (cart.length === 0) {
     return (
@@ -25,13 +30,13 @@ export function CartPage() {
         </span>
         <h1 className="mt-6 font-display text-4xl tracking-[-0.03em] sm:text-5xl">Your bag is empty</h1>
         <p className="mt-3 max-w-md text-sm leading-6 text-ovia-muted sm:text-base">
-          Your next Ovia piece is waiting in the private edit.
+          Explore the Jewellgalleria catalogue and add a piece when you are ready.
         </p>
         <Link
-          className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-ovia-primary px-6 text-sm font-bold text-white hover:bg-ovia-plum"
+          className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-control bg-ovia-primary px-6 text-sm font-bold text-white hover:bg-ovia-plum"
           to="/"
         >
-          Explore the collection
+          Continue Shopping
           <ArrowRight aria-hidden="true" size={17} />
         </Link>
       </Container>
@@ -58,7 +63,7 @@ export function CartPage() {
           </div>
         </section>
 
-        <aside className="-mx-4 h-fit border-y border-ovia-line bg-white p-5 sm:mx-0 sm:rounded-[1.5rem] sm:border sm:p-6 sm:shadow-card lg:sticky lg:top-28">
+        <aside className="-mx-4 h-fit border-y border-ovia-line bg-white p-5 sm:mx-0 sm:rounded-card sm:border sm:p-6 sm:shadow-card lg:sticky lg:top-28">
           <h2 className="font-display text-2xl">Order summary</h2>
           <dl className="mt-5 space-y-4 text-sm">
             <div className="flex items-center justify-between gap-4">
@@ -74,13 +79,25 @@ export function CartPage() {
               <dd className="font-display text-2xl text-ovia-plum">{formatInr(subtotal)}</dd>
             </div>
           </dl>
-          <Link
-            className="customer-primary-action mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-ovia-primary px-5 text-sm font-bold text-white hover:bg-ovia-plum"
-            to="/checkout"
-          >
-            Proceed to checkout
-            <ArrowRight aria-hidden="true" size={17} />
-          </Link>
+          {canCheckout ? (
+            <Link
+              className="customer-primary-action mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-ovia-primary px-5 text-sm font-bold text-white hover:bg-ovia-plum"
+              data-testid="cart-checkout"
+              to="/checkout"
+            >
+              Proceed to checkout
+              <ArrowRight aria-hidden="true" size={17} />
+            </Link>
+          ) : (
+            <button
+              className="mt-6 min-h-14 w-full cursor-not-allowed rounded-control bg-ovia-muted/30 px-5 text-sm font-bold text-white"
+              data-testid="cart-checkout"
+              disabled
+              type="button"
+            >
+              Price required to checkout
+            </button>
+          )}
           <p className="mt-4 text-center text-xs leading-5 text-ovia-muted">
             This is a private demonstration. No payment will be collected.
           </p>

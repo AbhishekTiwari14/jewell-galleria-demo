@@ -4,6 +4,7 @@ import {
   Eye,
   IndianRupee,
   PackageCheck,
+  Percent,
   ShoppingBag,
   Sparkles,
   Users,
@@ -33,7 +34,7 @@ import {
   useDemoStore,
 } from '../../store/demoStore'
 
-const LOADING_DURATION = 420
+const LOADING_DURATION = 480
 
 interface AnimatedNumberProps {
   formatter?: (value: number) => string
@@ -64,13 +65,34 @@ function AnimatedNumber({
   return <>{formatter(displayValue)}</>
 }
 
+function useMobileChart() {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches,
+  )
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 639px)')
+    const update = () => setIsMobile(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+
+  return isMobile
+}
+
+function formatChartLabel(label: string, isMobile: boolean) {
+  if (!isMobile) return label
+  return label.replace(' am', 'a').replace(' pm', 'p').replace('Week ', 'W')
+}
+
 function AnalyticsSkeleton() {
   return (
     <div aria-label="Loading simulated analytics" aria-live="polite" className="mt-6 animate-pulse" data-testid="analytics-loading" role="status">
       <span className="sr-only">Loading simulated analytics</span>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <div className="h-34 rounded-card border border-ovia-line bg-white p-5" key={item}>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
+        {Array.from({ length: 7 }, (_, item) => (
+          <div className="h-34 rounded-card border border-ovia-line bg-white p-4 last:col-span-2 sm:last:col-span-1" key={item}>
             <div className="h-3 w-24 rounded-full bg-ovia-blush/65" />
             <div className="mt-5 h-8 w-32 rounded-lg bg-ovia-line" />
             <div className="mt-3 h-3 w-20 rounded-full bg-ovia-line/75" />
@@ -101,6 +123,7 @@ export function BusinessAnalyticsPage() {
   const [renderedPeriod, setRenderedPeriod] = useState(selectedPeriod)
   const [isLoading, setIsLoading] = useState(false)
   const timeoutRef = useRef<number | null>(null)
+  const isMobileChart = useMobileChart()
   const snapshot = analyticsSnapshots[renderedPeriod]
 
   useEffect(
@@ -125,6 +148,46 @@ export function BusinessAnalyticsPage() {
 
   const topMetrics = [
     {
+      label: 'Visitors',
+      value: snapshot.sessions,
+      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
+      helper: 'Fabricated visits',
+      icon: Users,
+      testId: 'analytics-visitors',
+    },
+    {
+      label: 'Product Views',
+      value: snapshot.productViews,
+      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
+      helper: 'Simulated detail-page opens',
+      icon: Eye,
+      testId: 'analytics-product-views',
+    },
+    {
+      label: 'Add to Bag',
+      value: snapshot.addToCart,
+      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
+      helper: 'Simulated bag actions',
+      icon: ShoppingBag,
+      testId: 'analytics-add-to-bag',
+    },
+    {
+      label: 'Checkout',
+      value: snapshot.checkout,
+      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
+      helper: 'Simulated checkout starts',
+      icon: CreditCard,
+      testId: 'analytics-checkout',
+    },
+    {
+      label: 'Orders',
+      value: snapshot.orders,
+      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
+      helper: 'Simulated completed orders',
+      icon: PackageCheck,
+      testId: 'analytics-orders',
+    },
+    {
       label: 'Revenue',
       value: snapshot.revenueInPaise,
       formatter: (value: number) => formatInr(Math.round(value)),
@@ -133,27 +196,19 @@ export function BusinessAnalyticsPage() {
       testId: 'analytics-revenue',
     },
     {
-      label: 'Sessions / visitors',
-      value: snapshot.sessions,
-      formatter: (value: number) => Math.round(value).toLocaleString('en-IN'),
-      helper: 'Fabricated visits',
-      icon: Users,
-      testId: 'analytics-sessions',
-    },
-    {
-      label: 'Conversion rate',
+      label: 'Conversion Rate',
       value: snapshot.conversionRate,
       formatter: (value: number) => `${value.toFixed(2)}%`,
-      helper: 'Orders divided by sessions',
-      icon: PackageCheck,
+      helper: 'Orders divided by visitors',
+      icon: Percent,
       testId: 'analytics-conversion',
     },
   ]
 
   const funnel = [
-    { label: 'Sessions', value: snapshot.sessions, icon: Users },
-    { label: 'Product views', value: snapshot.productViews, icon: Eye },
-    { label: 'Add to cart', value: snapshot.addToCart, icon: ShoppingBag },
+    { label: 'Visitors', value: snapshot.sessions, icon: Users },
+    { label: 'Product Views', value: snapshot.productViews, icon: Eye },
+    { label: 'Add to Bag', value: snapshot.addToCart, icon: ShoppingBag },
     { label: 'Checkout', value: snapshot.checkout, icon: CreditCard },
     { label: 'Orders', value: snapshot.orders, icon: PackageCheck },
   ]
@@ -168,7 +223,7 @@ export function BusinessAnalyticsPage() {
                 aria-controls="analytics-content"
                 aria-selected={selectedPeriod === value}
                 className={classNames(
-                  'min-h-10 rounded-lg px-3 text-sm font-bold transition-colors sm:px-5',
+                  'min-h-11 rounded-lg px-3 text-sm font-bold transition-colors sm:px-5',
                   selectedPeriod === value
                     ? 'bg-ovia-primary text-white shadow-sm'
                     : 'text-ovia-muted hover:bg-ovia-blush/35 hover:text-ovia-plum',
@@ -192,7 +247,7 @@ export function BusinessAnalyticsPage() {
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ovia-primary/20 bg-ovia-blush/30 px-4 py-3 text-xs text-ovia-plum">
         <span className="font-bold tracking-[0.08em] uppercase">Demo analytics only</span>
-        <span>All events, metrics, trends, and insights below are simulated—not Ovia customer data.</span>
+        <span>All events, metrics, trends, and insights below are simulated—not Jewellgalleria customer data.</span>
       </div>
 
       <AnimatePresence mode="wait">
@@ -217,11 +272,11 @@ export function BusinessAnalyticsPage() {
             role="tabpanel"
             transition={{ duration: 0.22 }}
           >
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
               {topMetrics.map(({ label, value, formatter, helper, icon: Icon, testId }, index) => (
                 <motion.article
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-card border border-ovia-line bg-white p-5 shadow-card"
+                  className="rounded-card border border-ovia-line bg-white p-4 shadow-card last:col-span-2 sm:last:col-span-1"
                   initial={{ opacity: 0, y: 8 }}
                   key={label}
                   transition={{ delay: 0.06 + index * 0.07, duration: 0.34 }}
@@ -230,7 +285,7 @@ export function BusinessAnalyticsPage() {
                     <p className="text-sm font-semibold text-ovia-muted">{label}</p>
                     <span className="flex size-9 items-center justify-center rounded-full bg-ovia-blush/55 text-ovia-plum"><Icon aria-hidden="true" size={17} /></span>
                   </div>
-                  <p className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-ovia-ink" data-testid={testId}>
+                  <p className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-ovia-ink" data-testid={testId}>
                     <AnimatedNumber formatter={formatter} value={value} />
                   </p>
                   <p className="mt-1 text-xs text-ovia-muted">{helper}</p>
@@ -247,30 +302,31 @@ export function BusinessAnalyticsPage() {
                   </div>
                   <p className="text-xs text-ovia-muted">{snapshot.range}</p>
                 </div>
-                <div aria-label={`${snapshot.label} simulated revenue chart`} className="mt-5 h-64 w-full sm:h-76" data-testid="revenue-chart" role="img">
+                <div aria-label={`${snapshot.label} simulated revenue chart`} className="mt-5 h-72 w-full sm:h-76" data-mobile-layout={isMobileChart ? 'adapted' : 'desktop'} data-testid="revenue-chart" role="img">
                   <ResponsiveContainer height="100%" width="100%">
-                    <AreaChart data={snapshot.revenueSeries} margin={{ top: 12, right: 6, bottom: 0, left: 6 }}>
+                    <AreaChart data={snapshot.revenueSeries} margin={{ top: 12, right: isMobileChart ? 0 : 6, bottom: 0, left: isMobileChart ? 0 : 6 }}>
                       <defs>
                         <linearGradient id={`revenue-fill-${renderedPeriod}`} x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="0%" stopColor="#A64F8C" stopOpacity={0.28} />
-                          <stop offset="100%" stopColor="#A64F8C" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor="#7B1230" stopOpacity={0.24} />
+                          <stop offset="100%" stopColor="#7B1230" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid stroke="#eee5e9" strokeDasharray="3 5" vertical={false} />
+                      <CartesianGrid stroke="#e8dfdc" strokeDasharray="3 5" vertical={false} />
                       <XAxis
                         axisLine={false}
                         dataKey="label"
                         interval={renderedPeriod === 'weekly' ? 1 : 0}
                         minTickGap={4}
                         padding={{ left: 8, right: 8 }}
-                        tick={{ fill: '#756B70', fontSize: 11 }}
+                        tick={{ fill: '#756B70', fontSize: isMobileChart ? 10 : 11 }}
+                        tickFormatter={(label) => formatChartLabel(String(label), isMobileChart)}
                         tickLine={false}
                         tickMargin={12}
                       />
                       <Tooltip
-                        contentStyle={{ border: '1px solid #e9dfe4', borderRadius: '12px', boxShadow: '0 12px 30px rgba(41,35,39,.1)' }}
+                        contentStyle={{ border: '1px solid #e3ddda', borderRadius: '12px', boxShadow: '0 12px 30px rgba(41,35,39,.1)' }}
                         formatter={(value) => [formatInr(Number(value)), 'Simulated revenue']}
-                        labelStyle={{ color: '#673453', fontWeight: 700 }}
+                        labelStyle={{ color: '#47222c', fontWeight: 700 }}
                       />
                       <Area
                         animationBegin={80}
@@ -279,7 +335,7 @@ export function BusinessAnalyticsPage() {
                         fill={`url(#revenue-fill-${renderedPeriod})`}
                         fillOpacity={1}
                         isAnimationActive
-                        stroke="#A64F8C"
+                        stroke="#7B1230"
                         strokeLinecap="round"
                         strokeWidth={3}
                         type="monotone"
@@ -287,6 +343,9 @@ export function BusinessAnalyticsPage() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+                {isMobileChart && (
+                  <p className="mt-2 text-[0.68rem] leading-4 text-ovia-muted">Time labels are abbreviated for this mobile view.</p>
+                )}
               </article>
 
               <article className="rounded-card border border-ovia-line bg-white p-5 shadow-card sm:p-6">
@@ -338,7 +397,7 @@ export function BusinessAnalyticsPage() {
                 <Sparkles aria-hidden="true" className="text-ovia-primary" size={18} />
                 <h2 className="font-display text-2xl text-ovia-ink">Demo insights</h2>
               </div>
-              <p className="mt-1 text-xs text-ovia-muted">Illustrative prompts only—not analysis of Ovia’s real customers.</p>
+              <p className="mt-1 text-xs text-ovia-muted">Illustrative prompts only—not analysis of Jewellgalleria’s real customers.</p>
               <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {snapshot.insights.map((insight, index) => {
                   const product = sellableProducts.find((candidate) => candidate.id === insight.productId)
@@ -350,7 +409,7 @@ export function BusinessAnalyticsPage() {
                       key={insight.title}
                       transition={{ delay: 0.98 + index * 0.08, duration: 0.36 }}
                     >
-                      {product && <img alt="" className="h-24 w-18 shrink-0 rounded-xl bg-ovia-ivory object-cover object-top" src={product.image} />}
+                      {product && <img alt="" className="h-24 w-18 shrink-0 rounded-xl bg-ovia-ivory object-cover object-top" src={product.images[0]} />}
                       <div className="min-w-0">
                         <p className="text-[0.66rem] font-bold tracking-[0.1em] text-ovia-primary uppercase">Demo insight · {insight.eyebrow}</p>
                         <h3 className="mt-1.5 text-sm leading-5 font-bold text-ovia-ink">{insight.title}</h3>
