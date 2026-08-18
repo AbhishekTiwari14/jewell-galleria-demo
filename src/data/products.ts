@@ -50,7 +50,7 @@ export const products = [
     id: 'jg-real-001',
     slug: 'floral-drop-necklace',
     name: 'Floral Drop Necklace',
-    price: null,
+    price: 1_699,
     category: 'necklace',
     description:
       'A delicate necklace with alternating clear teardrop and floral motifs, presented exactly as visible in the supplied Jewellgalleria source.',
@@ -72,7 +72,7 @@ export const products = [
     id: 'jg-real-009',
     slug: 'heritage-jhumka-earrings',
     name: 'Heritage Jhumka Earrings',
-    price: null,
+    price: 1_399,
     category: 'earrings',
     description:
       'An ornate front-facing pair with red, green and clear decorative details, bell-shaped drops and layered bead fringe.',
@@ -94,7 +94,7 @@ export const products = [
     id: 'jg-real-010',
     slug: 'pear-drop-statement-necklace',
     name: 'Pear Drop Statement Necklace',
-    price: null,
+    price: 1_899,
     category: 'necklace',
     description:
       'A symmetrical two-row necklace with clear square and pear-shaped elements, preserved from the supplied worn view.',
@@ -116,7 +116,7 @@ export const products = [
     id: 'jg-real-013',
     slug: 'cascading-chandelier-earring',
     name: 'Cascading Chandelier Earring',
-    price: null,
+    price: 1_290,
     category: 'earrings',
     description:
       'A long chandelier design with a floral top and articulated strands of clear pear-shaped and round elements.',
@@ -138,7 +138,7 @@ export const products = [
     id: 'jg-real-005',
     slug: 'pearl-floral-ear-climber',
     name: 'Pearl-Like Floral Ear Climber',
-    price: null,
+    price: 1_690,
     category: 'earrings',
     description:
       'A diagonal ear piece combining clear floral and leaf-like elements with several luminous pearl-like round details.',
@@ -160,7 +160,7 @@ export const products = [
     id: 'jg-real-004',
     slug: 'two-row-statement-ring',
     name: 'Two-Row Statement Ring',
-    price: null,
+    price: 1_090,
     category: 'ring',
     description:
       'Two closely arranged rows of clear geometric elements, shown on the hand exactly as supplied.',
@@ -182,7 +182,7 @@ export const products = [
     id: 'jg-real-011',
     slug: 'solitaire-fan-earring',
     name: 'Solitaire Fan Earring',
-    price: null,
+    price: 1499,
     category: 'earrings',
     description:
       'A large round clear stud above a shallow fan of five clear geometric drops, taken from the supplied worn view.',
@@ -204,7 +204,7 @@ export const products = [
     id: 'jg-real-015',
     slug: 'toggle-pendant-necklace',
     name: 'Toggle Pendant Necklace',
-    price: null,
+    price: 999,
     category: 'necklace',
     description:
       'A circular-link necklace with a front toggle detail and an irregular luminous white centerpiece in a textured border.',
@@ -226,7 +226,7 @@ export const products = [
     id: 'jg-real-006',
     slug: 'multicolour-oval-bracelet',
     name: 'Multicolour Oval Bracelet',
-    price: null,
+    price: 1_199,
     category: 'bracelet',
     description:
       'A fine bracelet with alternating multicoloured oval settings, retained from the supplied wrist view.',
@@ -248,7 +248,7 @@ export const products = [
     id: 'jg-real-008',
     slug: 'oval-marquise-bracelet',
     name: 'Oval and Marquise Bracelet',
-    price: null,
+    price: 1_999,
     category: 'bracelet',
     description:
       'A delicate bracelet of pale oval settings and paired marquise-shaped details with a small pink accent.',
